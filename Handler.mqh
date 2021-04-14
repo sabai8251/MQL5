@@ -1,27 +1,21 @@
 #include "Logger.mqh"
 #include "OrderManager.mqh"
+#define BASE_LOT 0.01
 class CHandler
 {
     private:
-      static CHandler*            m_handler;
-      CLogger* C_logger;
-      COrderManager* C_OrderManager;
+      static CHandler*  m_handler;
+      CLogger*          C_logger;
+      COrderManager*    C_OrderManager;
+      
+      //プライベートコンストラクタ(他のクラスにNewはさせないぞ！！！)
       CHandler(){
         C_logger = CLogger::GetLog();
         C_OrderManager = COrderManager::GetOrderManager();
       }
 
     public:    
-      // *************************************************************************
-      //	機能		： HandlerClassSIngletongInstanceGetter
-      //	注意		： なし
-      //	メモ		： なし
-      //	引数		： なし
-      //	返り値		： なし
-      //	参考URL		： なし
-      // **************************	履	歴	************************************
-      // 		v1.0		2021.04.14			Taji		新規
-      // *************************************************************************/
+      //	機能		： //シングルトンクラスインスタンス取得
       static CHandler* GetHandler()
       {
         if(CheckPointer(m_handler) == POINTER_INVALID){
@@ -84,4 +78,4 @@ class CHandler
    
       }
 };
-CHandler*           CHandler::m_handler;
+CHandler* CHandler::m_handler;
