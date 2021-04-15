@@ -1,5 +1,6 @@
 #include "Logger.mqh"
 #include "OrderManager.mqh"
+#include "DisplayInfo.mqh"
 #define BASE_LOT 0.01
 class CHandler
 {
@@ -7,11 +8,13 @@ class CHandler
       static CHandler*  m_handler;
       CLogger*          C_logger;
       COrderManager*    C_OrderManager;
+      CDisplayInfo* C_DisplayInfo;
       
       //プライベートコンストラクタ(他のクラスにNewはさせないぞ！！！)
       CHandler(){
         C_logger = CLogger::GetLog();
         C_OrderManager = COrderManager::GetOrderManager();
+        C_DisplayInfo = CDisplayInfo::GetDisplayInfo();
       }
 
     public:    
@@ -40,6 +43,7 @@ class CHandler
         //output_log_to_file(StringFormat("init startaa %d %d",ORDER_TYPE_BUY,ORDER_TYPE_SELL));
         //---
         C_OrderManager.unit_test();
+        C_OrderManager.init();
 
         //ノーポジの場合新規ロットの最小値分、両建て
         if(0){
@@ -62,6 +66,11 @@ class CHandler
       }
 
       void OnTick(){
+        
+        //	C_logger.output_log_to_file("OnTick i=" + (string)i + "買い=" + (string)GET_BUY_PRICE  + "売り=" + (string)GET_SELL_PRICE );
+        C_DisplayInfo.UpdateOrderInfo();		// 注文情報を更新
+        //SetTP();				// TPを設定★ここはいったんコメント.COrderManagerに関数作ったがChandlerクラスからのみ呼んだほうがいい by taji
+        C_DisplayInfo.ShowData();				// コメントをチャート上に表示
         //---
         //output_log_to_file("OnTick start");
     
