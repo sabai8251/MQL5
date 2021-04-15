@@ -1,4 +1,7 @@
 //**************************************************
+// class CCheckerException
+//**************************************************
+//**************************************************
 // 定義（define）
 //**************************************************
 #define EA_START_DATE	"2019.10.1 00:00"		// EA利用開始日
@@ -55,7 +58,7 @@ class CCheckerException
         start = StringToTime( EA_START_DATE );		// 利用開始日 
         end = StringToTime( EA_END_DATE );			// 利用終了日
         now = TimeLocal();							// 現在日時（ローカル時間）
-      //	now = TimeCurrent();						// 現在日時
+        //	now = TimeCurrent();						// 現在日時
         
         /* 有効期限 */
         if( ( start < now ) && ( now < end ) ){		// 期限内
@@ -77,7 +80,6 @@ class CCheckerException
       // 		v1.0		2021.04.14			Taji		新規
       // *************************************************************************/
       bool Chk_Account(void){
-        
         long account = AccountInfoInteger( ACCOUNT_LOGIN );
         long near_account;		// 近いアカウント値
         

@@ -1,20 +1,27 @@
+//**************************************************
+// class CHandler
+//**************************************************
 #include "Logger.mqh"
 #include "OrderManager.mqh"
 #include "DisplayInfo.mqh"
+#include "CheckerException.mqh"
 #define BASE_LOT 0.01
 class CHandler
 {
     private:
       static CHandler*  m_handler;
+
       CLogger*          C_logger;
       COrderManager*    C_OrderManager;
       CDisplayInfo* C_DisplayInfo;
+      CCheckerException*  C_CheckerException;
       
       //プライベートコンストラクタ(他のクラスにNewはさせないぞ！！！)
       CHandler(){
         C_logger = CLogger::GetLog();
         C_OrderManager = COrderManager::GetOrderManager();
         C_DisplayInfo = CDisplayInfo::GetDisplayInfo();
+        C_CheckerException = CCheckerException::GetCheckerException();
       }
 
     public:    
@@ -40,6 +47,12 @@ class CHandler
       void OnInit(){
         //--- create timer
         EventSetTimer(60);
+
+        // 口座番号確認
+        if( C_CheckerException.Chk_Account() == false ){
+          C_logger.output_log_to_file("特定口座ではない");
+          //ExpertRemove();					// OnDeinit()をコールしてEA終了処理
+        }
         //output_log_to_file(StringFormat("init startaa %d %d",ORDER_TYPE_BUY,ORDER_TYPE_SELL));
         //---
         C_OrderManager.unit_test();
@@ -58,11 +71,53 @@ class CHandler
         }
       //Short、Longについて、前回の新規建てポジションpriceとして保存(Todo)
       }
-      
-      void OnDeinit(const int reason){
+
+      // *************************************************************************
+      //	機能		： 1秒ごとに実行される関数
+      //	注意		： なし
+      //	メモ		： タイマー関数内でコール
+      //	引数		： なし
+      //	返り値		： なし
+      //	参考URL		： なし
+      // **************************	履	歴	************************************
+      // 		v1.0		2021.04.14			Taji		新規
+      // *************************************************************************/
+      void OnTimer1sec() {
+
+      //	C_logger.output_log_to_file("1秒");
+      }
+      // *************************************************************************
+      //	機能		： 1分ごとに実行される関数
+      //	注意		： なし
+      //	メモ		： タイマー関数内でコール
+      //	引数		： なし
+      //	返り値		： なし
+      //	参考URL		： なし
+      // **************************	履	歴	************************************
+      // 		v1.0		2021.04.14			Taji		新規
+      // *************************************************************************/
+      void OnTimer1min() {
+        // 有効期限切れ
+        if( C_CheckerException.Chk_Expired() == false ){
+          C_logger.output_log_to_file("1分タイマー終了処理");
+          ExpertRemove();					// OnDeinit()をコールしてEA終了処理
+        }	
       }
 
+      void OnDeinit(const int reason){}
+
       void OnTimer(){
+          static int i = 0;
+
+          OnTimer1sec();			// 1秒ごとに実施する関数
+          // 1分
+          if( i == 3 ){
+            OnTimer1min();		// 1分ごとに実施する関数
+            i = 1;
+          }
+          else{
+            i++;
+          }
       }
 
       void OnTick(){
