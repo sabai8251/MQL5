@@ -35,3 +35,16 @@ _tbl_TP tbl_TP[] = {
 
 #define EA_STAGE		"Prototype"				// ステージ表示
 #define EA_VERSION		"1.00"					// バージョン表示
+
+#define EA_START_DATE	"2019.10.1 00:00"		// EA利用開始日
+#define EA_END_DATE		"2021.12.1 00:00"		// EA利用終了日
+
+const long account_array[] = {
+          1257601,
+          1257701,
+          1257711,
+          1257721,
+          1257731,
+          1257741,
+          1257751
+};
