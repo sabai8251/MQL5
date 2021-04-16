@@ -21,7 +21,6 @@ class CCheckerException
 {
     private:
       static CCheckerException* m_CheckerException;
-
       CLogger*          C_logger;
       
       //プライベートコンストラクタ(他のクラスにNewはさせないぞ！！！)

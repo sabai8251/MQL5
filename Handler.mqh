@@ -5,10 +5,7 @@
 #include "OrderManager.mqh"
 #include "DisplayInfo.mqh"
 #include "CheckerException.mqh"
-#define BASE_LOT 0.01
-#define BASE_DIFF_PRICE_TO_ORDER1		120		// 追加注文判定用基準変動価格1
-#define BASE_DIFF_PRICE_TO_ORDER2		140		// 追加注文判定用基準変動価格2
-#define MAX_ORDER_NUM 8 // 追加数制限
+#include "Configuration.mqh"
 class CHandler
 {
     private:
@@ -58,17 +55,16 @@ class CHandler
         if(0){
           C_OrderManager.unit_test();
         }
-        //両建て→ノーポジの場合新規ロットの最小値分建て
-        if(1){
-          if(0 == C_OrderManager.get_latestOrderOpenPrice(POSITION_TYPE_BUY) ){
-            if( C_OrderManager.get_TotalOrderNum(POSITION_TYPE_BUY) < MAX_ORDER_NUM ){
-              C_OrderManager.OrderTradeActionDeal( BASE_LOT, ORDER_TYPE_BUY);
-            }
+
+        //ノーポジの場合のみ新規ロットの最小値分建て
+        if(0 == C_OrderManager.get_latestOrderOpenPrice(POSITION_TYPE_BUY) ){
+          if( C_OrderManager.get_TotalOrderNum(POSITION_TYPE_BUY) < MAX_ORDER_NUM ){
+            C_OrderManager.OrderTradeActionDeal( BASE_LOT, ORDER_TYPE_BUY);
           }
-          if(0 == C_OrderManager.get_latestOrderOpenPrice(POSITION_TYPE_SELL) ){
-            if( C_OrderManager.get_TotalOrderNum(POSITION_TYPE_SELL) < MAX_ORDER_NUM ){
-              C_OrderManager.OrderTradeActionDeal( BASE_LOT, ORDER_TYPE_SELL);
-            }
+        }
+        if(0 == C_OrderManager.get_latestOrderOpenPrice(POSITION_TYPE_SELL) ){
+          if( C_OrderManager.get_TotalOrderNum(POSITION_TYPE_SELL) < MAX_ORDER_NUM ){
+            C_OrderManager.OrderTradeActionDeal( BASE_LOT, ORDER_TYPE_SELL);
           }
         }
         C_OrderManager.UpdateTP( POSITION_TYPE_BUY );
@@ -105,7 +101,6 @@ class CHandler
         }	
       }
 
-      
       // *************************************************************************
       //	機能		： Timer関数
       //	注意		： なし
@@ -200,6 +195,7 @@ class CHandler
         //くそな実装をわかってますが、いったんこれで。最新の前回注文価格を更新。(Todo)
           C_OrderManager.UpdateLatestOrderOpenPrice();
 
+          //ノーポジの場合のみ新規ロットの最小値分建て
           if(0 == C_OrderManager.get_latestOrderOpenPrice(POSITION_TYPE_BUY) ){
             if( C_OrderManager.get_TotalOrderNum(POSITION_TYPE_BUY) < MAX_ORDER_NUM ){
               C_OrderManager.OrderTradeActionDeal( BASE_LOT, ORDER_TYPE_BUY);
