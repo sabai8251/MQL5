@@ -1,10 +1,10 @@
 //**************************************************
 // Configuration
 //**************************************************
-#define MAGICNUM 345678
+#define MAGICNUM 345675
 #define TP_ALPHA1	60.0
 #define TP_ALPHA2	1.0
-#define TP_ALPHA3	60.0
+#define TP_ALPHA3	60.0 
 //TPの指定テーブル
 struct _tbl_TP{
 	int specify_price_num;  //いくつめ注文か
@@ -13,7 +13,7 @@ struct _tbl_TP{
 _tbl_TP tbl_TP[] = {
 	{ 1, TP_ALPHA1 },//注文が1つの場合. 1番の注文の価格＋α1
 	{ 1, TP_ALPHA2 },//注文が2つの場合. 1番の注文の価格＋α2
-	{ 2, TP_ALPHA1 },//注文が3つの場合. 2番の注文の価格＋α2
+	{ 2, TP_ALPHA1 },//注文が3つの場合. 2番の注文の価格＋α1
 	{ 2, TP_ALPHA2 },
 	{ 3, TP_ALPHA1 },
 	{ 3, TP_ALPHA2 },
