@@ -76,8 +76,8 @@ class CHandler
 		// 		v1.0		2021.04.14			taji		新規
 		// *************************************************************************/
 		void UpdateLatestOrderOpenPrice(){
-			m_preoder_price[0] = C_OrderManager.LatestOrderOpenPrice( POSITION_TYPE_BUY );
-			m_preoder_price[1] = C_OrderManager.LatestOrderOpenPrice( POSITION_TYPE_SELL );
+			m_preoder_price[0] = C_OrderManager.LatestOrderOpenPrice( POSITION_TYPE_BUY );//ポジションが0の場合は0がカエル
+			m_preoder_price[1] = C_OrderManager.LatestOrderOpenPrice( POSITION_TYPE_SELL );//ポジションが0の場合は0がカエル
 			//C_logger.output_log_to_file(StringFormat("COrderManager LatestOrderOpenPrice BUY  = %f ",m_preoder_price[0]));
 			//C_logger.output_log_to_file(StringFormat("COrderManager LatestOrderOpenPrice SELL = %f ",m_preoder_price[1]));
 		}
@@ -97,6 +97,10 @@ class CHandler
 				C_logger.output_log_to_file("Handler::OnInit 特定口座ではない");
 				//ExpertRemove();					// OnDeinit()をコールしてEA終了処理
 			}
+			//カスタムテーブル処理(Configuration.mqh)
+			ConfigCustomizeLotList();
+			ConfigCustomizeDiffPriceOrderList();
+			ConfigCustomizeTPTable();
 
 			//test 基本は各test項目をif(0)で制御
 			if(0){
@@ -105,6 +109,7 @@ class CHandler
 
 			//BUYまたはSELLがノーポジの場合,新規最小ロットを建てる(両建ての維持)
 			OrderForNoPosition();
+			UpdateLatestOrderOpenPrice();
 		}
 
 		// *************************************************************************
@@ -271,6 +276,8 @@ class CHandler
 
 				//ノーポジの場合のみ新規ロットの最小値分建て
 				OrderForNoPosition();
+				
+				UpdateLatestOrderOpenPrice();
 			}
 		}
 
