@@ -30,7 +30,7 @@ double lot_list[]={
 	BASE_LOT*16
 };
 
-//TPテーブルのカスタマイズ(Handlerのinitでコール)
+//LotListのカスタマイズ(Handlerのinitでコール)
 void ConfigCustomizeLotList(){
 	//**************taji用**********************
 	if(0){ 
@@ -92,7 +92,7 @@ int diff_price_order[] = {
 	BASE_DIFF_PRICE_TO_ORDER16
 };
 
-//TPテーブルのカスタマイズ(Handlerのinitでコール)
+//ピン幅リストのカスタマイズ(Handlerのinitでコール)
 void ConfigCustomizeDiffPriceOrderList(){
 	Print("ConfigCustomizeDiffPriceOrderList start");
 	//**************taji用**********************
