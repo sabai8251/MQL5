@@ -53,7 +53,7 @@ void ConfigCustomizeLotList(){
 // ピン幅に関する定義、リスト、カスタム関数
 //**************************************************
 //前回注文価格との変動差分を定義。次の注文を実施する判断値と使用。
-#define MAX_DIFF_PRICE_LIST_NUM 16 // ロットリストのリスト数
+#define MAX_DIFF_PRICE_LIST_NUM 16 // ピン幅リストのリスト数
 #define BASE_DIFF_PRICE 50
 #define BASE_DIFF_PRICE_TO_ORDER1		120		// 追加注文判定用基準変動価格1
 #define BASE_DIFF_PRICE_TO_ORDER2		BASE_DIFF_PRICE_TO_ORDER1+BASE_DIFF_PRICE		// 追加注文判定用基準変動価格2
@@ -129,7 +129,7 @@ void ConfigCustomizeDiffPriceOrderList(){
 #define TP_ALPHA1	60.0
 #define TP_ALPHA2	1.0
 #define TP_ALPHA3	60.0 
-#define MAX_TP_TABLE_ARRAY_NUM 16
+#define MAX_TP_TABLE_ARRAY_NUM 16 //リスト数
 
 //TPの指定テーブル
 struct _tbl_TP{

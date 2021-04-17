@@ -141,6 +141,37 @@ class CHandler
 		}
 
 		// *************************************************************************
+		//	機能		： ポジション数取得
+		//	注意		： なし
+		//	メモ		： なし
+		//	引数		： なし
+		//	返り値		： なし
+		//	参考URL		： なし
+		// **************************	履	歴	************************************
+		// 		v1.0		2021.04.14			Taka		新規
+		// *************************************************************************/
+		int CalculatePositionNum( ENUM_POSITION_TYPE req_type ){
+			int position_num=0; //　指定されたタイプの保有ポジション数
+			
+			C_logger.output_log_to_file("Handler::CalculatePositionNum start");
+
+			//全てのポジション数取得
+			int total=PositionsTotal();
+			for(int i=0; i<total; i++)
+			{
+				ulong position_ticket	= PositionGetTicket( i );
+				ulong magic			= PositionGetInteger( POSITION_MAGIC );
+				ENUM_POSITION_TYPE type=(ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+			
+				if(magic == MAGICNUM){
+					if( req_type == type ){
+						position_num++;
+					}
+				}
+			}
+			return position_num;
+		}
+		// *************************************************************************
 		//	機能		： 1秒ごとに実行される関数
 		//	注意		： なし
 		//	メモ		： タイマー関数内でコール
@@ -222,9 +253,10 @@ class CHandler
 				if(ask_diff > diff_price_for_order){
 					//ポジション限界値を超えない場合
 					if( C_OrderManager.get_TotalOrderNum(POSITION_TYPE_BUY) < MAX_ORDER_NUM ){
-						C_logger.output_log_to_file(StringFormat("Handler::OnTick　注文判断変化量=%d 直前ポジと現在価格の差(ASK)=%f",
-																diff_price_for_order,ask_diff));
-						C_OrderManager.OrderTradeActionDeal( BASE_LOT, ORDER_TYPE_BUY);
+						int num = CalculatePositionNum( POSITION_TYPE_BUY );
+						C_logger.output_log_to_file(StringFormat("Handler::OnTick　注文判断変化量=%d 直前ポジと現在価格の差(ASK)=%f lot=%f num=%d",
+																diff_price_for_order,ask_diff,lot_list[num],num));
+						C_OrderManager.OrderTradeActionDeal( lot_list[num], ORDER_TYPE_BUY);
 						//TP更新
 						C_OrderManager.UpdateTP( POSITION_TYPE_BUY );
 					}
@@ -243,9 +275,10 @@ class CHandler
 				if(bid_diff > diff_price_for_order){
 					//ポジション限界値を超えない場合
 					if( C_OrderManager.get_TotalOrderNum(POSITION_TYPE_SELL) < MAX_ORDER_NUM ){
-						C_logger.output_log_to_file(StringFormat("Handler::OnTick　注文判断変化量=%d 直前ポジと現在価格の差(BID)=%f",
-																diff_price_for_order,bid_diff));
-						C_OrderManager.OrderTradeActionDeal( BASE_LOT, ORDER_TYPE_SELL);
+						int num = CalculatePositionNum( POSITION_TYPE_SELL );
+						C_logger.output_log_to_file(StringFormat("Handler::OnTick　注文判断変化量=%d 直前ポジと現在価格の差(BID)=%f lot=%f num=%d",
+																diff_price_for_order,bid_diff,lot_list[num],num));
+						C_OrderManager.OrderTradeActionDeal( lot_list[num], ORDER_TYPE_SELL);
 						//TP更新
 						C_OrderManager.UpdateTP( POSITION_TYPE_SELL );
 					} 
