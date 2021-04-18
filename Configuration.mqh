@@ -2,6 +2,10 @@
 // Configuration
 //**************************************************
 #define MAGICNUM 345675
+//OrderManager::CalculateNewTP()の計算方法をモードを定義やリスト定義
+#define TP_CALCULATION_MODE_TAKA	1
+#define TP_CALCULATION_MODE_TAJI	2
+int Config_tp_calculation_mode=TP_CALCULATION_MODE_TAKA;
 
 //**************************************************
 // ロット数に関する定義、リスト、カスタム関数
@@ -96,7 +100,7 @@ int diff_price_order[] = {
 void ConfigCustomizeDiffPriceOrderList(){
 	Print("ConfigCustomizeDiffPriceOrderList start");
 	//**************taji用**********************
-	if(0){ 
+	if(Config_tp_calculation_mode == TP_CALCULATION_MODE_TAJI){ 
 		//デフォルト
 		return;
 	}
@@ -105,7 +109,7 @@ void ConfigCustomizeDiffPriceOrderList(){
 	//**************taka用**********************
 	//・2,3ピンを300USD
 	//・4ピン～を500USD
-	if(1){ 
+	if(Config_tp_calculation_mode == TP_CALCULATION_MODE_TAKA){ 
 		for ( int i =0; i < MAX_DIFF_PRICE_LIST_NUM; i++ ){
 			if( i < 2 ){
 				diff_price_order[i] = 300;
@@ -114,6 +118,7 @@ void ConfigCustomizeDiffPriceOrderList(){
 				diff_price_order[i] = 500;
 			}
 		}
+		return;
 	}
 	//*******************************************
 	Print("ConfigCustomizeDiffPriceOrderList end");
@@ -157,14 +162,14 @@ _tbl_TP tbl_TP[] = {
 void ConfigCustomizeTPTable(){
 	
 	//**************taji用**********************
-	if(1){
+	if(Config_tp_calculation_mode == TP_CALCULATION_MODE_TAJI){
 		//デフォルト
 		return;
 	}
 	//*******************************************
 
 	//**************taka用**********************
-	if(1){ 
+	if(Config_tp_calculation_mode == TP_CALCULATION_MODE_TAKA){ 
 		//デフォルト;
 		return;
 	}
@@ -173,10 +178,6 @@ void ConfigCustomizeTPTable(){
 	return;
 }
 
-#define TP_CALCULATION_MODE_TAKA	1
-#define TP_CALCULATION_MODE_TAJI	2
-//OrderManager::CalculateNewTP()の計算方法をモードを定義
-int Config_tp_calculation_mode=TP_CALCULATION_MODE_TAKA;
 
 
 //**************************************************
