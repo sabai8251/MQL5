@@ -180,6 +180,24 @@ void ConfigCustomizeTPTable(){
 //OrderManager::CalculateNewTP()の計算方法をモードを定義
 int Config_tp_calculation_mode=TP_CALCULATION_MODE_TAKA;
 
+
+//**************************************************
+// 値幅対応用定義、リスト
+//**************************************************
+//■急激な価格変更の検知時に、新規注文を入れない
+//・1分の所定(250USD/60000USD)の値幅
+#define DIFF_MINUTES_1 250
+//・3分の所定(350USD/60000USD)の値幅
+#define DIFF_MINUTES_3 350
+//・10分の所定(500USD/60000USD)の値幅
+#define DIFF_MINUTES_CUSTOM 500
+#define NUM_MINUTES_CUSTOM 10 //カスタムチェックの期間(デフォルト10分)
+
+#define RECOMMEND_NO_PROBREM 0 //問題なし
+#define RECOMMEND_STOP_BUY_DEAL 1 //BUYの取引一時停止
+#define RECOMMEND_STOP_SELL_DEAL 2 //SELLの取引一時停止
+
+
 //**************************************************
 // Checker用定義、リスト
 //**************************************************
@@ -198,3 +216,5 @@ const long account_array[] = {
 					1257741,
 					1257751
 };
+
+#define MINIMUN_ACCOUNT_MARGIN_LEVEL 500 //取引可能な最低証拠金維持率(％)
