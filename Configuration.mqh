@@ -11,7 +11,7 @@ int Config_tp_calculation_mode=TP_CALCULATION_MODE_TAKA;
 // ロット数に関する定義、リスト、カスタム関数
 //**************************************************
 #define BASE_LOT (0.01) //最小ロット数
-#define MAX_ORDER_NUM 5 // 注文追加数制限
+#define MAX_ORDER_NUM 6 // 注文追加数制限
 #define MAX_LOT_LIST_NUM 16 // ロットリストのリスト数
 
 //デフォルト注文LotList
@@ -37,7 +37,7 @@ double lot_list[]={
 //LotListのカスタマイズ(Handlerのinitでコール)
 void ConfigCustomizeLotList(){
 	//**************taji用**********************
-	if(0){ 
+	if(Config_tp_calculation_mode == TP_CALCULATION_MODE_TAJI){ 
 		for ( int i =0; i < MAX_LOT_LIST_NUM; i++ ){
 			lot_list[i] = BASE_LOT;
 		}
@@ -45,7 +45,7 @@ void ConfigCustomizeLotList(){
 	//*******************************************
 
 	//**************taka用**********************
-	if(0){ 
+	if(Config_tp_calculation_mode == TP_CALCULATION_MODE_TAKA){ 
 		//デフォルト
 		return;
 	}
@@ -78,15 +78,15 @@ void ConfigCustomizeLotList(){
 
 //ピン幅リスト
 int diff_price_order[] = {
-	BASE_DIFF_PRICE_TO_ORDER1,//現在注文が1つの場合で、次の注文をかける基準となる変動値.
-	BASE_DIFF_PRICE_TO_ORDER2,//現在注文が2つの場合で、次の注文をかける基準となる変動値.
-	BASE_DIFF_PRICE_TO_ORDER3,
-	BASE_DIFF_PRICE_TO_ORDER4,
-	BASE_DIFF_PRICE_TO_ORDER5,
-	BASE_DIFF_PRICE_TO_ORDER6,
-	BASE_DIFF_PRICE_TO_ORDER7,
-	BASE_DIFF_PRICE_TO_ORDER8,
-	BASE_DIFF_PRICE_TO_ORDER9,
+	BASE_DIFF_PRICE_TO_ORDER1,//現在注文が1つの場合で、2つ目の注文をかける基準となる変動値.
+	BASE_DIFF_PRICE_TO_ORDER2,//現在注文が2つの場合で、3つ目の注文をかける基準となる変動値.
+	BASE_DIFF_PRICE_TO_ORDER3,//現在注文が3つの場合で、4つ目の注文をかける基準となる変動値.
+	BASE_DIFF_PRICE_TO_ORDER4,//現在注文が4つの場合で、5つ目の注文をかける基準となる変動値.
+	BASE_DIFF_PRICE_TO_ORDER5,//現在注文が5つの場合で、6つ目の注文をかける基準となる変動値.
+	BASE_DIFF_PRICE_TO_ORDER6,//現在注文が6つの場合で、7つ目の注文をかける基準となる変動値.
+	BASE_DIFF_PRICE_TO_ORDER7,//現在注文が7つの場合で、8つ目の注文をかける基準となる変動値.
+	BASE_DIFF_PRICE_TO_ORDER8,//現在注文が8つの場合で、9つ目の注文をかける基準となる変動値.
+	BASE_DIFF_PRICE_TO_ORDER9,//現在注文が9つの場合で、10つ目の注文をかける基準となる変動値.
 	BASE_DIFF_PRICE_TO_ORDER10,
 	BASE_DIFF_PRICE_TO_ORDER11,
 	BASE_DIFF_PRICE_TO_ORDER12,
@@ -114,8 +114,11 @@ void ConfigCustomizeDiffPriceOrderList(){
 			if( i < 2 ){
 				diff_price_order[i] = 300;
 			}
-			else{
+			else if( i < 4 ){
 				diff_price_order[i] = 500;
+			}
+			else{
+				diff_price_order[i] = 800;
 			}
 		}
 		return;
@@ -185,12 +188,12 @@ void ConfigCustomizeTPTable(){
 //**************************************************
 //■急激な価格変更の検知時に、新規注文を入れない
 //・1分の所定(250USD/60000USD)の値幅
-#define DIFF_MINUTES_1 250
+#define DIFF_MINUTES_1 200
 //・3分の所定(350USD/60000USD)の値幅
-#define DIFF_MINUTES_3 300
+#define DIFF_MINUTES_3 250
 //・10分の所定(500USD/60000USD)の値幅
-#define DIFF_MINUTES_CUSTOM 500
-#define NUM_MINUTES_CUSTOM 10 //カスタムチェックの期間(デフォルト10分)
+#define DIFF_MINUTES_CUSTOM 350
+#define NUM_MINUTES_CUSTOM 15 //カスタムチェックの期間(デフォルト10分)この値はチェックする最大の値にすること。最大配列Noに使っているためOutOfRangeErrorの原因になります
 
 #define RECOMMEND_NO_PROBREM 0 //問題なし
 #define RECOMMEND_STOP_BUY_DEAL 1 //BUYの取引一時停止
