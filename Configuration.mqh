@@ -7,7 +7,7 @@
 // ロット数に関する定義、リスト、カスタム関数
 //**************************************************
 #define BASE_LOT (0.01) //最小ロット数
-#define MAX_ORDER_NUM 8 // 注文追加数制限
+#define MAX_ORDER_NUM 5 // 注文追加数制限
 #define MAX_LOT_LIST_NUM 16 // ロットリストのリスト数
 
 //デフォルト注文LotList
@@ -108,11 +108,9 @@ void ConfigCustomizeDiffPriceOrderList(){
 	if(1){ 
 		for ( int i =0; i < MAX_DIFF_PRICE_LIST_NUM; i++ ){
 			if( i < 2 ){
-				Print("ConfigCustomizeDiffPriceOrderList i=%d",i);
 				diff_price_order[i] = 300;
 			}
 			else{
-				Print("ConfigCustomizeDiffPriceOrderList i=%d",i);
 				diff_price_order[i] = 500;
 			}
 		}
@@ -188,7 +186,7 @@ int Config_tp_calculation_mode=TP_CALCULATION_MODE_TAKA;
 //・1分の所定(250USD/60000USD)の値幅
 #define DIFF_MINUTES_1 250
 //・3分の所定(350USD/60000USD)の値幅
-#define DIFF_MINUTES_3 350
+#define DIFF_MINUTES_3 300
 //・10分の所定(500USD/60000USD)の値幅
 #define DIFF_MINUTES_CUSTOM 500
 #define NUM_MINUTES_CUSTOM 10 //カスタムチェックの期間(デフォルト10分)
