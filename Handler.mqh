@@ -94,6 +94,9 @@ class CHandler
 		// 		v1.0		2021.04.14			Taji		新規
 		// *************************************************************************/
 		void OnInit(){
+
+			GlobalVariableSet("terminalg_lot",g_base_lot);//ロット最小値
+
 			// 口座番号確認
 			if( C_CheckerException.Chk_Account() == false ){
 				C_logger.output_log_to_file("Handler::OnInit 特定口座ではない");
@@ -129,13 +132,13 @@ class CHandler
 			if(0 == get_latestOrderOpenPrice(POSITION_TYPE_BUY) ){
 				if( C_OrderManager.get_TotalOrderNum(POSITION_TYPE_BUY) < MAX_ORDER_NUM ){
 					C_logger.output_log_to_file("Handler::OrderForNoPosition BUYで新規ロットの最小値分建てを行う");
-					C_OrderManager.OrderTradeActionDeal( BASE_LOT, ORDER_TYPE_BUY);
+					C_OrderManager.OrderTradeActionDeal( g_base_lot, ORDER_TYPE_BUY);
 				}
 			}
 			if(0 == get_latestOrderOpenPrice(POSITION_TYPE_SELL) ){
 				if( C_OrderManager.get_TotalOrderNum(POSITION_TYPE_SELL) < MAX_ORDER_NUM ){
 					C_logger.output_log_to_file("Handler::OrderForNoPosition SELLで新規ロットの最小値分建てを行う");
-					C_OrderManager.OrderTradeActionDeal( BASE_LOT, ORDER_TYPE_SELL);
+					C_OrderManager.OrderTradeActionDeal( g_base_lot, ORDER_TYPE_SELL);
 				}
 			}
 			C_OrderManager.UpdateTP( POSITION_TYPE_BUY );
@@ -239,10 +242,12 @@ class CHandler
 		void OnTick(){
 			//C_DisplayInfo.UpdateOrderInfo();		// 注文情報を更新
 			//C_DisplayInfo.ShowData();				// コメントをチャート上に表示
+			g_base_lot=GlobalVariableGet("terminalg_lot");
+			//C_logger.output_log_to_file(StringFormat("g_base_lot = %f", g_base_lot));
 
 			//証拠金維持率チェック(500％下回ったら取引しない)
 			if( AccountInfoDouble(ACCOUNT_MARGIN_LEVEL) < MINIMUN_ACCOUNT_MARGIN_LEVEL ){
-				//C_logger.output_log_to_file(StringFormat("証拠金維持率　=　%f",AccountInfoDouble(ACCOUNT_MARGIN_LEVEL)));
+				C_logger.output_log_to_file(StringFormat("証拠金維持率　=　%f",AccountInfoDouble(ACCOUNT_MARGIN_LEVEL)));
 				return;
 			}
 
@@ -266,10 +271,11 @@ class CHandler
 						if( C_OrderManager.get_TotalOrderNum(POSITION_TYPE_BUY) < MAX_ORDER_NUM ){
 							int num = CalculatePositionNum( POSITION_TYPE_BUY );
 							C_logger.output_log_to_file(StringFormat("Handler::OnTick　注文判断変化量=%d 直前ポジと現在価格の差(ASK)=%f lot=%f num=%d",
-																	diff_price_for_order,ask_diff,lot_list[num],num));
-							C_OrderManager.OrderTradeActionDeal( lot_list[num], ORDER_TYPE_BUY);
+																	diff_price_for_order,ask_diff,lot_list[num]*g_base_lot,num));
+							C_OrderManager.OrderTradeActionDeal( lot_list[num]*g_base_lot, ORDER_TYPE_BUY);
 							//TP更新
 							C_OrderManager.UpdateTP( POSITION_TYPE_BUY );
+							UpdateLatestOrderOpenPrice();
 						}
 					}
 				}
@@ -290,10 +296,11 @@ class CHandler
 						if( C_OrderManager.get_TotalOrderNum(POSITION_TYPE_SELL) < MAX_ORDER_NUM ){
 							int num = CalculatePositionNum( POSITION_TYPE_SELL );
 							C_logger.output_log_to_file(StringFormat("Handler::OnTick　注文判断変化量=%d 直前ポジと現在価格の差(BID)=%f lot=%f num=%d",
-																	diff_price_for_order,bid_diff,lot_list[num],num));
-							C_OrderManager.OrderTradeActionDeal( lot_list[num], ORDER_TYPE_SELL);
+																	diff_price_for_order,bid_diff,lot_list[num]*g_base_lot,num));
+							C_OrderManager.OrderTradeActionDeal( lot_list[num]*g_base_lot, ORDER_TYPE_SELL);
 							//TP更新
 							C_OrderManager.UpdateTP( POSITION_TYPE_SELL );
+							UpdateLatestOrderOpenPrice();
 						} 
 					}
 				}
