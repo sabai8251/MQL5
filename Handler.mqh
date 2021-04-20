@@ -7,6 +7,7 @@
 #include "CheckerException.mqh"
 #include "Configuration.mqh"
 #include "CheckerBars.mqh"
+input int aaaaa;
 class CHandler
 {
 	private:
@@ -94,8 +95,9 @@ class CHandler
 		// 		v1.0		2021.04.14			Taji		新規
 		// *************************************************************************/
 		void OnInit(){
-
-			GlobalVariableSet("terminalg_lot",g_base_lot);//ロット最小値
+			if( false == GlobalVariableCheck("terminalg_lot")){
+				GlobalVariableSet("terminalg_lot",g_base_lot);//ロット最小値
+			}
 
 			// 口座番号確認
 			if( C_CheckerException.Chk_Account() == false ){
