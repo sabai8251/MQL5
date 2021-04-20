@@ -18,6 +18,8 @@ class CHandler
 		CCheckerException*  C_CheckerException;
 		CCheckerBars*       C_CheckerBars;
 		double              m_preoder_price[2];   //前回のポジション定義
+		bool                m_buy_stop;//フェードアウトモード発動(BUY)
+		bool                m_sell_stop;//フェードアウトモード発動(SELL)
 	
 		//プライベートコンストラクタ(他のクラスにNewはさせないぞ！！！)
 		CHandler(){
@@ -29,6 +31,8 @@ class CHandler
 			C_CheckerException = CCheckerException::GetCheckerException();
 			C_CheckerBars = CCheckerBars::GetCheckerBars();
 			UpdateLatestOrderOpenPrice();
+			m_buy_stop=false;
+			m_sell_stop=false;
 		}
 
 		//配列番号へ変換
@@ -95,9 +99,15 @@ class CHandler
 		// 		v1.0		2021.04.14			Taji		新規
 		// *************************************************************************/
 		void OnInit(){
+			//ロット最小値のターミナルグローバル変数がなければ初期化
 			if( false == GlobalVariableCheck("terminalg_lot")){
-				GlobalVariableSet("terminalg_lot",g_base_lot);//ロット最小値
+				GlobalVariableSet("terminalg_lot",g_base_lot);
 			}
+			//フェードアウトモードのターミナルグローバル変数がない場合は初期化
+			if( false == GlobalVariableCheck("terminalg_fadeout_mode")){
+				GlobalVariableSet("terminalg_fadeout_mode",g_fadeout_mode);
+			}
+			g_fadeout_mode=GlobalVariableGet("terminalg_fadeout_mode");
 
 			// 口座番号確認
 			if( C_CheckerException.Chk_Account() == false ){
@@ -132,15 +142,25 @@ class CHandler
 		void OrderForNoPosition() {
 			//ノーポジの場合のみ新規ロットの最小値分建てを行う
 			if(0 == get_latestOrderOpenPrice(POSITION_TYPE_BUY) ){
-				if( C_OrderManager.get_TotalOrderNum(POSITION_TYPE_BUY) < MAX_ORDER_NUM ){
-					C_logger.output_log_to_file("Handler::OrderForNoPosition BUYで新規ロットの最小値分建てを行う");
-					C_OrderManager.OrderTradeActionDeal( g_base_lot, ORDER_TYPE_BUY);
+				if( true == g_fadeout_mode){
+					//BUYのポジションが0になったのでフェードアウトモード発動(BUY)
+					m_buy_stop=true;
+				}else{
+					if( C_OrderManager.get_TotalOrderNum(POSITION_TYPE_BUY) < MAX_ORDER_NUM ){
+						C_logger.output_log_to_file("Handler::OrderForNoPosition BUYで新規ロットの最小値分建てを行う");
+						C_OrderManager.OrderTradeActionDeal( g_base_lot, ORDER_TYPE_BUY);
+					}
 				}
 			}
 			if(0 == get_latestOrderOpenPrice(POSITION_TYPE_SELL) ){
-				if( C_OrderManager.get_TotalOrderNum(POSITION_TYPE_SELL) < MAX_ORDER_NUM ){
-					C_logger.output_log_to_file("Handler::OrderForNoPosition SELLで新規ロットの最小値分建てを行う");
-					C_OrderManager.OrderTradeActionDeal( g_base_lot, ORDER_TYPE_SELL);
+				if( true == g_fadeout_mode){
+					//SELLのポジションが0になったのでフェードアウトモード発動(SELL)
+					m_sell_stop=true;
+				}else{
+					if( C_OrderManager.get_TotalOrderNum(POSITION_TYPE_SELL) < MAX_ORDER_NUM ){
+						C_logger.output_log_to_file("Handler::OrderForNoPosition SELLで新規ロットの最小値分建てを行う");
+						C_OrderManager.OrderTradeActionDeal( g_base_lot, ORDER_TYPE_SELL);
+					}
 				}
 			}
 			C_OrderManager.UpdateTP( POSITION_TYPE_BUY );
@@ -245,21 +265,28 @@ class CHandler
 			//C_DisplayInfo.UpdateOrderInfo();		// 注文情報を更新
 			//C_DisplayInfo.ShowData();				// コメントをチャート上に表示
 			g_base_lot=GlobalVariableGet("terminalg_lot");
-			//C_logger.output_log_to_file(StringFormat("g_base_lot = %f", g_base_lot));
+			g_fadeout_mode=GlobalVariableGet("terminalg_fadeout_mode");
 
-			//証拠金維持率チェック(500％下回ったら取引しない)
-			if( AccountInfoDouble(ACCOUNT_MARGIN_LEVEL) < MINIMUN_ACCOUNT_MARGIN_LEVEL ){
-				C_logger.output_log_to_file(StringFormat("証拠金維持率　=　%f",AccountInfoDouble(ACCOUNT_MARGIN_LEVEL)));
-				return;
+			//フェードアウトモードから通常モードへ復帰
+			if( g_fadeout_mode == false ){
+				m_buy_stop = false;
+				m_sell_stop = false;
 			}
 
-			int diff_price_for_order = BASE_DIFF_PRICE_TO_ORDER2;
-			
+			//証拠金維持率チェック(500％下回ったら取引しない)
+			if( AccountInfoDouble(ACCOUNT_MARGIN_LEVEL) != 0){//ポジションが0の時は維持率0になる
+				if( AccountInfoDouble(ACCOUNT_MARGIN_LEVEL) < MINIMUN_ACCOUNT_MARGIN_LEVEL ){
+					C_logger.output_log_to_file(StringFormat("証拠金維持率　=　%f",AccountInfoDouble(ACCOUNT_MARGIN_LEVEL)));
+					return;
+				}
+			}
+
 			//値幅チェック
 			int deal_recomment;
+			int diff_price_for_order = BASE_DIFF_PRICE_TO_ORDER2;
 			deal_recomment = C_CheckerBars.Chk_preiod_m1_bars();
 			//#######################################ロングの処理start##################################################
-			if( RECOMMEND_STOP_BUY_DEAL != deal_recomment ){ //BUYが値幅チェックにより制限がかかっていなければ処理開始
+			if( RECOMMEND_STOP_BUY_DEAL != deal_recomment && m_buy_stop == false ){ //BUYが値幅チェックにより制限がかかっていなければ処理開始
 				//ロングの前回ポジからの現在価格との差を計算
 				double ask_diff = get_latestOrderOpenPrice(POSITION_TYPE_BUY) - SymbolInfoDouble(Symbol(),SYMBOL_ASK);
 
@@ -281,10 +308,14 @@ class CHandler
 						}
 					}
 				}
+				else{
+					OrderForNoPosition();
+					UpdateLatestOrderOpenPrice();
+				}
 			}
 			//#######################################ロングの処理end######################################################
 			//#######################################ショートの処理start##################################################
-			if( RECOMMEND_STOP_SELL_DEAL != deal_recomment ){ //SELLが値幅チェックにより制限がかかっていなければ処理開始
+			if( RECOMMEND_STOP_SELL_DEAL != deal_recomment && m_sell_stop == false ){ //SELLが値幅チェックにより制限がかかっていなければ処理開始
 				//ショートの前回ポジと現在価格との差を計算
 				double bid_diff = SymbolInfoDouble(Symbol(),SYMBOL_BID) - get_latestOrderOpenPrice(POSITION_TYPE_SELL);
 				
@@ -305,6 +336,10 @@ class CHandler
 							UpdateLatestOrderOpenPrice();
 						} 
 					}
+				}
+				else{
+					OrderForNoPosition();
+					UpdateLatestOrderOpenPrice();
 				}
 			}
 			//#######################################ショートの処理end######################################################

@@ -252,6 +252,7 @@ const long account_array[] = {
 };
 
 #define MINIMUN_ACCOUNT_MARGIN_LEVEL 700 //取引可能な最低証拠金維持率(％)
+bool g_fadeout_mode = false; //TPがヒットしたほうの取引は順次停止します。
 #endif
 
 
