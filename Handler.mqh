@@ -103,6 +103,7 @@ class CHandler
 			if( false == GlobalVariableCheck("terminalg_lot")){
 				GlobalVariableSet("terminalg_lot",g_base_lot);
 			}
+			g_base_lot=GlobalVariableGet("terminalg_lot");
 			//フェードアウトモードのターミナルグローバル変数がない場合は初期化
 			if( false == GlobalVariableCheck("terminalg_fadeout_mode")){
 				GlobalVariableSet("terminalg_fadeout_mode",g_fadeout_mode);
