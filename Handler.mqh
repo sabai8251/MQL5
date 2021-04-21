@@ -17,18 +17,18 @@ class CHandler
 		CDisplayInfo*       C_DisplayInfo;
 		CCheckerException*  C_CheckerException;
 		CCheckerBars*       C_CheckerBars;
-		double              m_preoder_price[2];   //前回のポジション定義
+		//double              m_preoder_price[2];   //前回のポジション定義
 	
 		//プライベートコンストラクタ(他のクラスにNewはさせないぞ！！！)
 		CHandler(){
-			m_preoder_price[0] = 0;
-			m_preoder_price[1] = 0;
+			//m_preoder_price[0] = 0;
+			//m_preoder_price[1] = 0;
 			C_logger = CLogger::GetLog();
 			C_OrderManager = COrderManager::GetOrderManager();
 			C_DisplayInfo = CDisplayInfo::GetDisplayInfo();
 			C_CheckerException = CCheckerException::GetCheckerException();
 			C_CheckerBars = CCheckerBars::GetCheckerBars();
-			UpdateLatestOrderOpenPrice();
+			//UpdateLatestOrderOpenPrice();
 		}
 
 		//配列番号へ変換
@@ -66,7 +66,8 @@ class CHandler
 		// 		v1.0		2021.04.14			taji		新規
 		// *************************************************************************/
 		double get_latestOrderOpenPrice( ENUM_POSITION_TYPE req_type ){
-			return m_preoder_price[ArreyNumFromPositionType(req_type)];
+			//return m_preoder_price[ArreyNumFromPositionType(req_type)];
+			return C_OrderManager.LatestOrderOpenPrice( req_type );
 		}
 		// *************************************************************************
 		//	機能		： 前回注文した注文価格を更新する
@@ -78,12 +79,12 @@ class CHandler
 		// **************************	履	歴	************************************
 		// 		v1.0		2021.04.14			taji		新規
 		// *************************************************************************/
-		void UpdateLatestOrderOpenPrice(){
-			m_preoder_price[0] = C_OrderManager.LatestOrderOpenPrice( POSITION_TYPE_BUY );//ポジションが0の場合は0がカエル
-			m_preoder_price[1] = C_OrderManager.LatestOrderOpenPrice( POSITION_TYPE_SELL );//ポジションが0の場合は0がカエル
+		//void UpdateLatestOrderOpenPrice(){
+		//	m_preoder_price[0] = C_OrderManager.LatestOrderOpenPrice( POSITION_TYPE_BUY );//ポジションが0の場合は0がカエル
+		//	m_preoder_price[1] = C_OrderManager.LatestOrderOpenPrice( POSITION_TYPE_SELL );//ポジションが0の場合は0がカエル
 			//C_logger.output_log_to_file(StringFormat("COrderManager LatestOrderOpenPrice BUY  = %f ",m_preoder_price[0]));
 			//C_logger.output_log_to_file(StringFormat("COrderManager LatestOrderOpenPrice SELL = %f ",m_preoder_price[1]));
-		}
+		//}
 		// *************************************************************************
 		//	機能		： 初期化処理
 		//	注意		： なし
@@ -124,7 +125,7 @@ class CHandler
 
 			//BUYまたはSELLがノーポジの場合,新規最小ロットを建てる(両建ての維持)
 			OrderForNoPosition();
-			UpdateLatestOrderOpenPrice();
+			//UpdateLatestOrderOpenPrice();
 		}
 
 		// *************************************************************************
@@ -284,7 +285,7 @@ class CHandler
 							C_OrderManager.OrderTradeActionDeal( lot_list[num] * base_lot, ORDER_TYPE_BUY);
 							//TP更新
 							C_OrderManager.UpdateTP( POSITION_TYPE_BUY );
-							UpdateLatestOrderOpenPrice();
+							//UpdateLatestOrderOpenPrice();
 						}
 					}
 				}
@@ -292,7 +293,7 @@ class CHandler
 					//ノーポジ時( フェードアウトモード時は注文しない,それ以外は新規注文を行う)
 					if( GlobalVariableGet("terminalg_fadeout_mode") == false ){
 						OrderForNoPosition();
-						UpdateLatestOrderOpenPrice();
+						//UpdateLatestOrderOpenPrice();
 					}
 				}
 			}
@@ -317,7 +318,7 @@ class CHandler
 							C_OrderManager.OrderTradeActionDeal( lot_list[num] * base_lot, ORDER_TYPE_SELL);
 							//TP更新
 							C_OrderManager.UpdateTP( POSITION_TYPE_SELL );
-							UpdateLatestOrderOpenPrice();
+							//UpdateLatestOrderOpenPrice();
 						} 
 					}
 				}
@@ -325,7 +326,7 @@ class CHandler
 					//ノーポジ時( フェードアウトモード時は注文しない,それ以外は新規注文を行う)
 					if( GlobalVariableGet("terminalg_fadeout_mode") == false ){
 						OrderForNoPosition();
-						UpdateLatestOrderOpenPrice();
+						//UpdateLatestOrderOpenPrice();
 					}
 				}
 			}
@@ -350,7 +351,7 @@ class CHandler
 		//念のため最新の前回注文価格を更新。TPの更新(ややこしくなるので新規オーダーはTick()でのみするように！！！)
 			if(trans.type == TRADE_TRANSACTION_DEAL_ADD){
 				C_logger.output_log_to_file(StringFormat("Handler::OnTradeTransaction trans.type == TRADE_TRANSACTION_DEAL_ADD %d",trans.deal_type));
-				UpdateLatestOrderOpenPrice();
+				//UpdateLatestOrderOpenPrice();
 				C_OrderManager.UpdateTP( POSITION_TYPE_BUY );
 				C_OrderManager.UpdateTP( POSITION_TYPE_SELL );
 			}
