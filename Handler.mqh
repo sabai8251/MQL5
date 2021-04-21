@@ -7,7 +7,7 @@
 #include "CheckerException.mqh"
 #include "Configuration.mqh"
 #include "CheckerBars.mqh"
-input int aaaaa;
+
 class CHandler
 {
 	private:
@@ -99,22 +99,23 @@ class CHandler
 		// 		v1.0		2021.04.14			Taji		新規
 		// *************************************************************************/
 		void OnInit(){
+
 			//ロット最小値のターミナルグローバル変数がなければ初期化
 			if( false == GlobalVariableCheck("terminalg_lot")){
-				GlobalVariableSet("terminalg_lot",g_base_lot);
+				GlobalVariableSet("terminalg_lot",BASE_LOT);
 			}
-			g_base_lot=GlobalVariableGet("terminalg_lot");
+
 			//フェードアウトモードのターミナルグローバル変数がない場合は初期化
 			if( false == GlobalVariableCheck("terminalg_fadeout_mode")){
-				GlobalVariableSet("terminalg_fadeout_mode",g_fadeout_mode);
+				GlobalVariableSet("terminalg_fadeout_mode",false);
 			}
-			g_fadeout_mode=GlobalVariableGet("terminalg_fadeout_mode");
 
 			// 口座番号確認
 			if( C_CheckerException.Chk_Account() == false ){
 				C_logger.output_log_to_file("Handler::OnInit 特定口座ではない");
 				//ExpertRemove();					// OnDeinit()をコールしてEA終了処理
 			}
+
 			//カスタムテーブル処理(Configuration.mqh)
 			ConfigCustomizeLotList();
 			ConfigCustomizeDiffPriceOrderList();
@@ -141,26 +142,29 @@ class CHandler
 		// 		v1.0		2021.04.14			Taji		新規
 		// *************************************************************************/
 		void OrderForNoPosition() {
+			double base_lot=GlobalVariableGet("terminalg_lot");
+			
 			//ノーポジの場合のみ新規ロットの最小値分建てを行う
 			if(0 == get_latestOrderOpenPrice(POSITION_TYPE_BUY) ){
-				if( true == g_fadeout_mode){
+				if( true == GlobalVariableGet("terminalg_fadeout_mode")){
 					//BUYのポジションが0になったのでフェードアウトモード発動(BUY)
 					m_buy_stop=true;
 				}else{
 					if( C_OrderManager.get_TotalOrderNum(POSITION_TYPE_BUY) < MAX_ORDER_NUM ){
 						C_logger.output_log_to_file("Handler::OrderForNoPosition BUYで新規ロットの最小値分建てを行う");
-						C_OrderManager.OrderTradeActionDeal( g_base_lot, ORDER_TYPE_BUY);
+						C_OrderManager.OrderTradeActionDeal( base_lot, ORDER_TYPE_BUY);
 					}
 				}
 			}
+
 			if(0 == get_latestOrderOpenPrice(POSITION_TYPE_SELL) ){
-				if( true == g_fadeout_mode){
+				if( true == GlobalVariableGet("terminalg_fadeout_mode")){
 					//SELLのポジションが0になったのでフェードアウトモード発動(SELL)
 					m_sell_stop=true;
 				}else{
 					if( C_OrderManager.get_TotalOrderNum(POSITION_TYPE_SELL) < MAX_ORDER_NUM ){
 						C_logger.output_log_to_file("Handler::OrderForNoPosition SELLで新規ロットの最小値分建てを行う");
-						C_OrderManager.OrderTradeActionDeal( g_base_lot, ORDER_TYPE_SELL);
+						C_OrderManager.OrderTradeActionDeal( base_lot, ORDER_TYPE_SELL);
 					}
 				}
 			}
@@ -199,17 +203,6 @@ class CHandler
 			}
 			return position_num;
 		}
-		// *************************************************************************
-		//	機能		： 1秒ごとに実行される関数
-		//	注意		： なし
-		//	メモ		： タイマー関数内でコール
-		//	引数		： なし
-		//	返り値		： なし
-		//	参考URL		： なし
-		// **************************	履	歴	************************************
-		// 		v1.0		2021.04.14			Taji		新規
-		// *************************************************************************/
-		void OnTimer1sec() {}
 
 		// *************************************************************************
 		//	機能		： 1分ごとに実行される関数
@@ -241,7 +234,6 @@ class CHandler
 		// *************************************************************************/
 		void OnTimer(){
 			static int i = 0;
-			OnTimer1sec();			// 1秒ごとに実施する関数
 			// 1分
 			if( i == 3 ){
 				OnTimer1min();		// 1分ごとに実施する関数
@@ -265,11 +257,10 @@ class CHandler
 		void OnTick(){
 			//C_DisplayInfo.UpdateOrderInfo();		// 注文情報を更新
 			//C_DisplayInfo.ShowData();				// コメントをチャート上に表示
-			g_base_lot=GlobalVariableGet("terminalg_lot");
-			g_fadeout_mode=GlobalVariableGet("terminalg_fadeout_mode");
+			double base_lot=GlobalVariableGet("terminalg_lot");
 
 			//フェードアウトモードから通常モードへ復帰
-			if( g_fadeout_mode == false ){
+			if( GlobalVariableGet("terminalg_fadeout_mode") == false ){
 				m_buy_stop = false;
 				m_sell_stop = false;
 			}
@@ -282,27 +273,28 @@ class CHandler
 				}
 			}
 
-			//値幅チェック
+			//急激な値幅の有無チェック。急な上場時はSELLを入れない。急な下降時はBUYを入れない
 			int deal_recomment;
 			int diff_price_for_order = BASE_DIFF_PRICE_TO_ORDER2;
 			deal_recomment = C_CheckerBars.Chk_preiod_m1_bars();
+
 			//#######################################ロングの処理start##################################################
 			if( RECOMMEND_STOP_BUY_DEAL != deal_recomment && m_buy_stop == false ){ //BUYが値幅チェックにより制限がかかっていなければ処理開始
-				//ロングの前回ポジからの現在価格との差を計算
-				double ask_diff = get_latestOrderOpenPrice(POSITION_TYPE_BUY) - SymbolInfoDouble(Symbol(),SYMBOL_ASK);
-
-				//所有ポジション数に応じた変動値の指定
+				
+				//注文処理
 				int TotalOrderNumBuy = C_OrderManager.get_TotalOrderNum(POSITION_TYPE_BUY);
 				if(0 != TotalOrderNumBuy){
+					//ロングの前回ポジからの現在価格との差を計算
+					double ask_diff = get_latestOrderOpenPrice(POSITION_TYPE_BUY) - SymbolInfoDouble(Symbol(),SYMBOL_ASK);
 					diff_price_for_order = diff_price_order[TotalOrderNumBuy-1];
-					//所定Price下がったら、追加量テーブルに従って所定量追加
+					//所定のピン幅下がったら、追加量テーブルに従って所定量追加
 					if(ask_diff > diff_price_for_order){
 						//ポジション限界値を超えない場合
 						if( C_OrderManager.get_TotalOrderNum(POSITION_TYPE_BUY) < MAX_ORDER_NUM ){
 							int num = CalculatePositionNum( POSITION_TYPE_BUY );
 							C_logger.output_log_to_file(StringFormat("Handler::OnTick　注文判断変化量=%d 直前ポジと現在価格の差(ASK)=%f lot=%f num=%d",
-																	diff_price_for_order,ask_diff,lot_list[num]*g_base_lot,num));
-							C_OrderManager.OrderTradeActionDeal( lot_list[num]*g_base_lot, ORDER_TYPE_BUY);
+																	diff_price_for_order, ask_diff,lot_list[num] * base_lot, num));
+							C_OrderManager.OrderTradeActionDeal( lot_list[num] * base_lot, ORDER_TYPE_BUY);
 							//TP更新
 							C_OrderManager.UpdateTP( POSITION_TYPE_BUY );
 							UpdateLatestOrderOpenPrice();
@@ -310,6 +302,7 @@ class CHandler
 					}
 				}
 				else{
+					//ノーポジ時の新規注文
 					OrderForNoPosition();
 					UpdateLatestOrderOpenPrice();
 				}
@@ -317,21 +310,21 @@ class CHandler
 			//#######################################ロングの処理end######################################################
 			//#######################################ショートの処理start##################################################
 			if( RECOMMEND_STOP_SELL_DEAL != deal_recomment && m_sell_stop == false ){ //SELLが値幅チェックにより制限がかかっていなければ処理開始
-				//ショートの前回ポジと現在価格との差を計算
-				double bid_diff = SymbolInfoDouble(Symbol(),SYMBOL_BID) - get_latestOrderOpenPrice(POSITION_TYPE_SELL);
-				
-				//所有ポジション数に応じた変動値の指定
+
+				//注文処理
 				int TotalOrderNumSell = C_OrderManager.get_TotalOrderNum(POSITION_TYPE_SELL);
 				if(0 != TotalOrderNumSell){
+					//ショートの前回ポジと現在価格との差を計算
+					double bid_diff = SymbolInfoDouble(Symbol(),SYMBOL_BID) - get_latestOrderOpenPrice(POSITION_TYPE_SELL);
 					diff_price_for_order = diff_price_order[TotalOrderNumSell-1];
-					//所定Price上がったら、追加量テーブルに従って所定量追加
+					//所定のピン幅上がったら、追加量テーブルに従って所定量追加
 					if(bid_diff > diff_price_for_order){
 						//ポジション限界値を超えない場合
 						if( C_OrderManager.get_TotalOrderNum(POSITION_TYPE_SELL) < MAX_ORDER_NUM ){
 							int num = CalculatePositionNum( POSITION_TYPE_SELL );
 							C_logger.output_log_to_file(StringFormat("Handler::OnTick　注文判断変化量=%d 直前ポジと現在価格の差(BID)=%f lot=%f num=%d",
-																	diff_price_for_order,bid_diff,lot_list[num]*g_base_lot,num));
-							C_OrderManager.OrderTradeActionDeal( lot_list[num]*g_base_lot, ORDER_TYPE_SELL);
+																	diff_price_for_order, bid_diff, lot_list[num] * base_lot, num));
+							C_OrderManager.OrderTradeActionDeal( lot_list[num] * base_lot, ORDER_TYPE_SELL);
 							//TP更新
 							C_OrderManager.UpdateTP( POSITION_TYPE_SELL );
 							UpdateLatestOrderOpenPrice();
@@ -339,6 +332,7 @@ class CHandler
 					}
 				}
 				else{
+					//ノーポジ時の新規注文
 					OrderForNoPosition();
 					UpdateLatestOrderOpenPrice();
 				}
@@ -361,15 +355,12 @@ class CHandler
 			const MqlTradeRequest&      request,      //リクエスト構造体
 			const MqlTradeResult&       result       // 結果構造体
 		){
-		//くそな実装をわかってますが、いったんこれで。最新の前回注文価格を更新。(Todo)
+		//念のため最新の前回注文価格を更新。TPの更新(ややこしくなるので新規オーダーはTick()でのみするように！！！)
 			if(trans.type == TRADE_TRANSACTION_DEAL_ADD){
 				C_logger.output_log_to_file(StringFormat("Handler::OnTradeTransaction trans.type == TRADE_TRANSACTION_DEAL_ADD %d",trans.deal_type));
 				UpdateLatestOrderOpenPrice();
-
-				//ノーポジの場合のみ新規ロットの最小値分建て
-				OrderForNoPosition();
-				
-				UpdateLatestOrderOpenPrice();
+				C_OrderManager.UpdateTP( POSITION_TYPE_BUY );
+				C_OrderManager.UpdateTP( POSITION_TYPE_SELL );
 			}
 		}
 
