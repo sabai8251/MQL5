@@ -102,6 +102,10 @@ class CHandler
 			if(0){
 				C_OrderManager.unit_test();
 			}
+			
+			//TPを改めてスキャン
+			C_OrderManager.UpdateTP( POSITION_TYPE_BUY );
+			C_OrderManager.UpdateTP( POSITION_TYPE_SELL );
 		}
 
 		// *************************************************************************
