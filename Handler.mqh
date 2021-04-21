@@ -18,8 +18,6 @@ class CHandler
 		CCheckerException*  C_CheckerException;
 		CCheckerBars*       C_CheckerBars;
 		double              m_preoder_price[2];   //前回のポジション定義
-		bool                m_buy_stop;//フェードアウトモード発動(BUY)
-		bool                m_sell_stop;//フェードアウトモード発動(SELL)
 	
 		//プライベートコンストラクタ(他のクラスにNewはさせないぞ！！！)
 		CHandler(){
@@ -31,8 +29,6 @@ class CHandler
 			C_CheckerException = CCheckerException::GetCheckerException();
 			C_CheckerBars = CCheckerBars::GetCheckerBars();
 			UpdateLatestOrderOpenPrice();
-			m_buy_stop=false;
-			m_sell_stop=false;
 		}
 
 		//配列番号へ変換
@@ -147,8 +143,6 @@ class CHandler
 			//ノーポジの場合のみ新規ロットの最小値分建てを行う
 			if(0 == get_latestOrderOpenPrice(POSITION_TYPE_BUY) ){
 				if( true == GlobalVariableGet("terminalg_fadeout_mode")){
-					//BUYのポジションが0になったのでフェードアウトモード発動(BUY)
-					m_buy_stop=true;
 				}else{
 					if( C_OrderManager.get_TotalOrderNum(POSITION_TYPE_BUY) < MAX_ORDER_NUM ){
 						C_logger.output_log_to_file("Handler::OrderForNoPosition BUYで新規ロットの最小値分建てを行う");
@@ -159,8 +153,6 @@ class CHandler
 
 			if(0 == get_latestOrderOpenPrice(POSITION_TYPE_SELL) ){
 				if( true == GlobalVariableGet("terminalg_fadeout_mode")){
-					//SELLのポジションが0になったのでフェードアウトモード発動(SELL)
-					m_sell_stop=true;
 				}else{
 					if( C_OrderManager.get_TotalOrderNum(POSITION_TYPE_SELL) < MAX_ORDER_NUM ){
 						C_logger.output_log_to_file("Handler::OrderForNoPosition SELLで新規ロットの最小値分建てを行う");
@@ -259,12 +251,6 @@ class CHandler
 			//C_DisplayInfo.ShowData();				// コメントをチャート上に表示
 			double base_lot=GlobalVariableGet("terminalg_lot");
 
-			//フェードアウトモードから通常モードへ復帰
-			if( GlobalVariableGet("terminalg_fadeout_mode") == false ){
-				m_buy_stop = false;
-				m_sell_stop = false;
-			}
-
 			//証拠金維持率チェック(500％下回ったら取引しない)
 			if( AccountInfoDouble(ACCOUNT_MARGIN_LEVEL) != 0){//ポジションが0の時は維持率0になる
 				if( AccountInfoDouble(ACCOUNT_MARGIN_LEVEL) < MINIMUN_ACCOUNT_MARGIN_LEVEL ){
@@ -279,7 +265,7 @@ class CHandler
 			deal_recomment = C_CheckerBars.Chk_preiod_m1_bars();
 
 			//#######################################ロングの処理start##################################################
-			if( RECOMMEND_STOP_BUY_DEAL != deal_recomment && m_buy_stop == false ){ //BUYが値幅チェックにより制限がかかっていなければ処理開始
+			if( RECOMMEND_STOP_BUY_DEAL != deal_recomment ){ //BUYが値幅チェックにより制限がかかっていなければ処理開始
 				
 				//注文処理
 				int TotalOrderNumBuy = C_OrderManager.get_TotalOrderNum(POSITION_TYPE_BUY);
@@ -287,6 +273,7 @@ class CHandler
 					//ロングの前回ポジからの現在価格との差を計算
 					double ask_diff = get_latestOrderOpenPrice(POSITION_TYPE_BUY) - SymbolInfoDouble(Symbol(),SYMBOL_ASK);
 					diff_price_for_order = diff_price_order[TotalOrderNumBuy-1];
+
 					//所定のピン幅下がったら、追加量テーブルに従って所定量追加
 					if(ask_diff > diff_price_for_order){
 						//ポジション限界値を超えない場合
@@ -302,14 +289,16 @@ class CHandler
 					}
 				}
 				else{
-					//ノーポジ時の新規注文
-					OrderForNoPosition();
-					UpdateLatestOrderOpenPrice();
+					//ノーポジ時( フェードアウトモード時は注文しない,それ以外は新規注文を行う)
+					if( GlobalVariableGet("terminalg_fadeout_mode") == false ){
+						OrderForNoPosition();
+						UpdateLatestOrderOpenPrice();
+					}
 				}
 			}
 			//#######################################ロングの処理end######################################################
 			//#######################################ショートの処理start##################################################
-			if( RECOMMEND_STOP_SELL_DEAL != deal_recomment && m_sell_stop == false ){ //SELLが値幅チェックにより制限がかかっていなければ処理開始
+			if( RECOMMEND_STOP_SELL_DEAL != deal_recomment ){ //SELLが値幅チェックにより制限がかかっていなければ処理開始
 
 				//注文処理
 				int TotalOrderNumSell = C_OrderManager.get_TotalOrderNum(POSITION_TYPE_SELL);
@@ -317,6 +306,7 @@ class CHandler
 					//ショートの前回ポジと現在価格との差を計算
 					double bid_diff = SymbolInfoDouble(Symbol(),SYMBOL_BID) - get_latestOrderOpenPrice(POSITION_TYPE_SELL);
 					diff_price_for_order = diff_price_order[TotalOrderNumSell-1];
+
 					//所定のピン幅上がったら、追加量テーブルに従って所定量追加
 					if(bid_diff > diff_price_for_order){
 						//ポジション限界値を超えない場合
@@ -332,9 +322,11 @@ class CHandler
 					}
 				}
 				else{
-					//ノーポジ時の新規注文
-					OrderForNoPosition();
-					UpdateLatestOrderOpenPrice();
+					//ノーポジ時( フェードアウトモード時は注文しない,それ以外は新規注文を行う)
+					if( GlobalVariableGet("terminalg_fadeout_mode") == false ){
+						OrderForNoPosition();
+						UpdateLatestOrderOpenPrice();
+					}
 				}
 			}
 			//#######################################ショートの処理end######################################################
