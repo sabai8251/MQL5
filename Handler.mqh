@@ -344,6 +344,8 @@ class CHandler
 		// **************************	履	歴	************************************
 		// 		v1.0		2021.04.14			Taji		新規
 		// *************************************************************************/
-		void OnDeinit(const int reason){}
+		void OnDeinit(const int reason){
+			Print("Handler::OnDeinit()");
+		}
 };
 CHandler* CHandler::m_handler;

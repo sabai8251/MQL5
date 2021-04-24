@@ -131,19 +131,19 @@ void ConfigCustomizeDiffPriceOrderList(){
 			switch( i ){
 				
 				case 0:		// [0]: 2ピン目（1-2ピン間の価格差）
-					diff_price_order[i] = 450;
+					diff_price_order[i] = 400;
 					break;
 
 				case 1:		// [1]: 3ピン目（2-3ピン間の価格差）
-					diff_price_order[i] = 600;
+					diff_price_order[i] = 500;
 					break;
 
 				case 2:		// [2]: 4ピン目（3-4ピン間の価格差）
-					diff_price_order[i] = 1300;
+					diff_price_order[i] = 1000;
 					break;
 
 				case 3:		// [3]: 5ピン目（4-5ピン間の価格差）
-					diff_price_order[i] = 1600;
+					diff_price_order[i] = 1500;
 					break;
 				
 				case 4:		// [4]: 6ピン目（5-6ピン間の価格差）
@@ -167,8 +167,8 @@ void ConfigCustomizeDiffPriceOrderList(){
 // TP値に関する定義、リスト、カスタム関数
 //**************************************************
 //TPテーブル用定義値
-#define TP_ALPHA1	150.0
-#define TP_ALPHA2	10.0
+#define TP_ALPHA1	100.0
+#define TP_ALPHA2	1.0
 #define TP_ALPHA3	60.0 
 #define MAX_TP_TABLE_ARRAY_NUM 16 //リスト数
 
@@ -181,9 +181,9 @@ _tbl_TP tbl_TP[] = {
 	{ 1, TP_ALPHA1 },//positionが1つの場合. 1番のpositionの価格＋α1
 	{ 1, TP_ALPHA2 },//positionが2つの場合. 1番のpositionの価格＋α2
 	{ 2, TP_ALPHA1 },//positionが3つの場合. 2番のpositionの価格＋α1
-	{ 2, TP_ALPHA2 },
+	{ 2, TP_ALPHA1 },
 	{ 3, TP_ALPHA1 },
-	{ 3, TP_ALPHA2 },
+	{ 3, TP_ALPHA1 },
 	{ 4, TP_ALPHA1 },
 	{ 4, TP_ALPHA2 },
 	{ 5, TP_ALPHA1 },
