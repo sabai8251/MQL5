@@ -2,8 +2,6 @@
 // Configurationパターン切り替え
 //**************************************************
 #define CONFICRATION_PATERN1
-//#define CONFICRATION_PATERN2
-
 
 #ifdef CONFICRATION_PATERN1
 //**************************************************
@@ -16,12 +14,13 @@
 #define TP_CALCULATION_MODE_TAKA	1
 #define TP_CALCULATION_MODE_TAJI	2
 int Config_tp_calculation_mode=TP_CALCULATION_MODE_TAKA;
+//int Config_tp_calculation_mode=TP_CALCULATION_MODE_TAJI;
 
 //**************************************************
 // ロット数に関する定義、リスト、カスタム関数
 //**************************************************
-#define BASE_LOT (0.01)//システム上の最小ロット数
-#define MAX_ORDER_NUM 6 // 注文追加数制限
+#define BASE_LOT (0.1)//システム上の最小ロット数
+#define MAX_ORDER_NUM 7 // 注文追加数制限
 #define MAX_LOT_LIST_NUM 16 // ロットリストのリスト数
 
 //double g_base_lot = BASE_LOT;//最小ロット数
@@ -30,9 +29,9 @@ double lot_list[]={
 	1,//注文１つ目のベースロット(m_base_lot)に対する倍率
 	2,//注文２つ目のベースロット(m_base_lot)に対する倍率
 	3,//注文３つ目のベースロット(m_base_lot)に対する倍率
-	4,//注文４つ目のベースロット(m_base_lot)に対する倍率
-	5,//注文５つ目のベースロット(m_base_lot)に対する倍率
-	6,//注文６つ目のベースロット(m_base_lot)に対する倍率
+	4,//7,//注文４つ目のベースロット(m_base_lot)に対する倍率
+	5,//15,//注文５つ目のベースロット(m_base_lot)に対する倍率
+	6,//31,//注文６つ目のベースロット(m_base_lot)に対する倍率
 	7,
 	8,
 	9,
@@ -49,10 +48,17 @@ double lot_list[]={
 void ConfigCustomizeLotList(){
 
 	//**************taji用**********************
-	if(Config_tp_calculation_mode == TP_CALCULATION_MODE_TAJI){ 
-		for ( int i =0; i < MAX_LOT_LIST_NUM; i++ ){
-			lot_list[i] = 1;
-		}
+	if(Config_tp_calculation_mode == TP_CALCULATION_MODE_TAJI){ //★変更taji
+	//フィボナッチ
+		lot_list[0] = 1;
+		lot_list[1] = 1;
+		lot_list[2] = 3;
+		lot_list[3] = 5;
+		lot_list[4] = 8;
+		lot_list[5] = 13;
+		lot_list[6] = 21;
+		lot_list[7] = 34;
+		return;
 	}
 	//*******************************************
 
@@ -113,8 +119,40 @@ void ConfigCustomizeDiffPriceOrderList(){
 	Print("ConfigCustomizeDiffPriceOrderList start");
 
 	//**************taji用**********************
-	if(Config_tp_calculation_mode == TP_CALCULATION_MODE_TAJI){ 
-		//デフォルト
+	if(Config_tp_calculation_mode == TP_CALCULATION_MODE_TAJI){//★変更taji
+
+		for ( int i =0; i < MAX_DIFF_PRICE_LIST_NUM; i++ ){
+			// ピン幅設定
+			switch( i ){
+				//ピン幅とピン幅の差がフィボナッチ
+				case 0:		// [0]: 2ピン目（1-2ピン間の価格差）
+					diff_price_order[i] = 450;
+					break;
+
+				case 1:		// [1]: 3ピン目（2-3ピン間の価格差）
+					diff_price_order[i] = 600;
+					break;
+
+				case 2:		// [2]: 4ピン目（3-4ピン間の価格差）
+					diff_price_order[i] = 843;
+					break;
+
+				case 3:		// [3]: 5ピン目（4-5ピン間の価格差）
+					diff_price_order[i] = 1235;
+					break;
+				
+				case 4:		// [4]: 6ピン目（5-6ピン間の価格差）
+					diff_price_order[i] = 1870;
+					break;
+				case 5:		// [5]: 7ピン目（6-7ピン間の価格差）
+					diff_price_order[i] = 2898;
+					break;
+					
+				default:	// [5以降]: 8ピン目～
+					diff_price_order[i] = 4562;
+					break;
+			}
+		}
 		return;
 	}
 	//*******************************************
@@ -167,7 +205,8 @@ void ConfigCustomizeDiffPriceOrderList(){
 // TP値に関する定義、リスト、カスタム関数
 //**************************************************
 //TPテーブル用定義値
-#define TP_ALPHA1	150.0
+#define TP_ALPHA1	200.0//デフォルト
+//#define TP_ALPHA1	100.0//★変更taji
 #define TP_ALPHA2	10.0
 #define TP_ALPHA3	60.0 
 #define MAX_TP_TABLE_ARRAY_NUM 16 //リスト数
@@ -200,8 +239,11 @@ _tbl_TP tbl_TP[] = {
 void ConfigCustomizeTPTable(){
 	
 	//**************taji用**********************
-	if(Config_tp_calculation_mode == TP_CALCULATION_MODE_TAJI){
-		//デフォルト
+	if(Config_tp_calculation_mode == TP_CALCULATION_MODE_TAJI){//★変更taji
+		tbl_TP[1].alpha = TP_ALPHA1;
+		tbl_TP[3].alpha = TP_ALPHA1;
+		tbl_TP[5].alpha = TP_ALPHA1;
+		tbl_TP[7].alpha = TP_ALPHA1;
 		return;
 	}
 	//*******************************************
