@@ -20,7 +20,7 @@ int Config_tp_calculation_mode=TP_CALCULATION_MODE_TAKA;
 // ロット数に関する定義、リスト、カスタム関数
 //**************************************************
 #define BASE_LOT (0.1)//システム上の最小ロット数
-#define MAX_ORDER_NUM 7 // 注文追加数制限
+#define MAX_ORDER_NUM 6 // 注文追加数制限
 #define MAX_LOT_LIST_NUM 16 // ロットリストのリスト数
 
 //double g_base_lot = BASE_LOT;//最小ロット数
