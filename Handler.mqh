@@ -7,7 +7,9 @@
 #include "CheckerException.mqh"
 #include "Configuration.mqh"
 #include "CheckerBars.mqh"
-
+input int trailingStop_mode = 100;
+input int super_volatility_range = 0;
+input int super_volatility_minutes = 0;
 class CHandler
 {
 	private:
@@ -87,6 +89,48 @@ class CHandler
 				GlobalVariableSet("terminalg_fadeout_mode",false);
 			}
 
+			//トレーリングストップモードのターミナルグローバル変数がなければ初期化
+			if( false == GlobalVariableCheck("tg_trailingStop_mode")){
+				GlobalVariableSet("tg_trailingStop_mode",false);
+			}
+			if( trailingStop_mode == 1) {
+				GlobalVariableSet("tg_trailingStop_mode",true);
+			}
+			if( trailingStop_mode == 0) {
+				GlobalVariableSet("tg_trailingStop_mode",false);
+			}
+
+			//トレーリングストップ幅のターミナルグローバル変数がなければ初期化
+			if( false == GlobalVariableCheck("tg_trailingStop_range")){
+				GlobalVariableSet("tg_trailingStop_range",100);
+			}
+			
+			//BUY注文停止上限値のターミナルグローバル変数がなければ初期化
+			if( false == GlobalVariableCheck("tg_BuyOrderStopLimitMaxPrice")){
+				GlobalVariableSet("tg_BuyOrderStopLimitMaxPrice",1000000);
+			}
+
+			//SELL注文停止下限値のターミナルグローバル変数がなければ初期化
+			if( false == GlobalVariableCheck("tg_SellOrderStopLimitMinPrice")){
+				GlobalVariableSet("tg_SellOrderStopLimitMinPrice",0);
+			}
+
+			//スーパー変動時判断ロジックのレンジ(単位は$)パラメタのターミナルグローバル変数がなければ初期化
+			if( false == GlobalVariableCheck("tg_StopOrderJudge_range")){
+				GlobalVariableSet("tg_StopOrderJudge_range",10000);
+			}
+			if( super_volatility_range != 0 ){
+				GlobalVariableSet("tg_StopOrderJudge_range",super_volatility_range);
+			}
+
+			//スーパー変動時判断ロジックの検査期間(単位は分)パラメタのターミナルグローバル変数がなければ初期化
+			if( false == GlobalVariableCheck("tg_StopOrderJudge_minutes")){
+				GlobalVariableSet("tg_StopOrderJudge_minutes",10);
+			}
+			if( super_volatility_minutes != 0 ){
+				GlobalVariableSet("tg_StopOrderJudge_minutes",super_volatility_minutes);
+			}
+
 			// 口座番号確認
 			if( C_CheckerException.Chk_Account() == false ){
 				C_logger.output_log_to_file("Handler::OnInit 特定口座ではない");
@@ -104,8 +148,8 @@ class CHandler
 			}
 			
 			//TPを改めてスキャン
-			C_OrderManager.UpdateTP( POSITION_TYPE_BUY );
-			C_OrderManager.UpdateTP( POSITION_TYPE_SELL );
+			C_OrderManager.UpdateSLTP( POSITION_TYPE_BUY );
+			C_OrderManager.UpdateSLTP( POSITION_TYPE_SELL );
 		}
 
 		// *************************************************************************
@@ -123,8 +167,10 @@ class CHandler
 			
 			//ノーポジの場合のみ新規ロットの最小値分建てを行う
 			if(0 == get_latestOrderOpenPrice(POSITION_TYPE_BUY) ){
-				//フェードアウトモード時は注文しない,それ以外は新規注文を行う)
 				if( true == GlobalVariableGet("terminalg_fadeout_mode")){
+					//フェードアウトモード時は注文しない
+				}else if( GlobalVariableGet("tg_BuyOrderStopLimitMaxPrice") < SymbolInfoDouble(Symbol(),SYMBOL_ASK) ){
+					//上限値越え時は注文しない
 				}else{
 					if( C_OrderManager.get_TotalOrderNum(POSITION_TYPE_BUY) < MAX_ORDER_NUM ){
 						C_logger.output_log_to_file("Handler::OrderForNoPosition BUYで新規ロットの最小値分建てを行う");
@@ -134,8 +180,10 @@ class CHandler
 			}
 
 			if(0 == get_latestOrderOpenPrice(POSITION_TYPE_SELL) ){
-				//フェードアウトモード時は注文しない,それ以外は新規注文を行う)
 				if( true == GlobalVariableGet("terminalg_fadeout_mode")){
+					//フェードアウトモード時は注文しない
+				}else if( GlobalVariableGet("tg_SellOrderStopLimitMinPrice") > SymbolInfoDouble(Symbol(),SYMBOL_BID) ){
+					//下限値越え時は注文しない
 				}else{
 					if( C_OrderManager.get_TotalOrderNum(POSITION_TYPE_SELL) < MAX_ORDER_NUM ){
 						C_logger.output_log_to_file("Handler::OrderForNoPosition SELLで新規ロットの最小値分建てを行う");
@@ -143,8 +191,8 @@ class CHandler
 					}
 				}
 			}
-			C_OrderManager.UpdateTP( POSITION_TYPE_BUY );
-			C_OrderManager.UpdateTP( POSITION_TYPE_SELL );
+			C_OrderManager.UpdateSLTP( POSITION_TYPE_BUY );
+			C_OrderManager.UpdateSLTP( POSITION_TYPE_SELL );
 		}
 
 		// *************************************************************************
@@ -242,13 +290,18 @@ class CHandler
 				}
 			}
 
+			C_OrderManager.UpdateSLTP( POSITION_TYPE_BUY );
+			C_OrderManager.UpdateSLTP( POSITION_TYPE_SELL );
+
 			//急激な値幅の有無チェック。急な上場時はSELLを入れない。急な下降時はBUYを入れない
 			int deal_recomment;
+			int deal_recomment_for_super;
 			int diff_price_for_order = BASE_DIFF_PRICE_TO_ORDER2;
 			deal_recomment = C_CheckerBars.Chk_preiod_m1_bars();
+			deal_recomment_for_super = C_CheckerBars.Chk_preiod_m1_bars_stoporder();//壮大な過剰変動時対応
 
 			//#######################################ロングの処理start##################################################
-			if( RECOMMEND_STOP_BUY_DEAL != deal_recomment ){ //BUYが値幅チェックにより制限がかかっていなければ処理開始
+			if( RECOMMEND_STOP_BUY_DEAL != deal_recomment && RECOMMEND_STOP_BUY_DEAL != deal_recomment_for_super ){ //BUYが値幅チェックにより制限がかかっていなければ処理開始
 				
 				//注文処理
 				int TotalOrderNumBuy = C_OrderManager.get_TotalOrderNum(POSITION_TYPE_BUY);
@@ -266,7 +319,7 @@ class CHandler
 																	diff_price_for_order, ask_diff,lot_list[num] * base_lot, num));
 							C_OrderManager.OrderTradeActionDeal( lot_list[num] * base_lot, ORDER_TYPE_BUY);
 							//TP更新
-							C_OrderManager.UpdateTP( POSITION_TYPE_BUY );
+							C_OrderManager.UpdateSLTP( POSITION_TYPE_BUY );
 						}
 					}
 				}
@@ -279,7 +332,7 @@ class CHandler
 			}
 			//#######################################ロングの処理end######################################################
 			//#######################################ショートの処理start##################################################
-			if( RECOMMEND_STOP_SELL_DEAL != deal_recomment ){ //SELLが値幅チェックにより制限がかかっていなければ処理開始
+			if( RECOMMEND_STOP_SELL_DEAL != deal_recomment  && RECOMMEND_STOP_SELL_DEAL != deal_recomment_for_super){ //SELLが値幅チェックにより制限がかかっていなければ処理開始
 
 				//注文処理
 				int TotalOrderNumSell = C_OrderManager.get_TotalOrderNum(POSITION_TYPE_SELL);
@@ -297,7 +350,7 @@ class CHandler
 																	diff_price_for_order, bid_diff, lot_list[num] * base_lot, num));
 							C_OrderManager.OrderTradeActionDeal( lot_list[num] * base_lot, ORDER_TYPE_SELL);
 							//TP更新
-							C_OrderManager.UpdateTP( POSITION_TYPE_SELL );
+							C_OrderManager.UpdateSLTP( POSITION_TYPE_SELL );
 						} 
 					}
 				}
@@ -327,11 +380,11 @@ class CHandler
 			const MqlTradeResult&       result       // 結果構造体
 		){
 		//TPの更新(ややこしくなるので新規オーダーはTick()でのみするように！！！)
-			if(trans.type == TRADE_TRANSACTION_DEAL_ADD){
-				C_logger.output_log_to_file(StringFormat("Handler::OnTradeTransaction trans.type == TRADE_TRANSACTION_DEAL_ADD %d",trans.deal_type));
-				C_OrderManager.UpdateTP( POSITION_TYPE_BUY );
-				C_OrderManager.UpdateTP( POSITION_TYPE_SELL );
-			}
+			//if(trans.type == TRADE_TRANSACTION_DEAL_ADD){
+				//C_logger.output_log_to_file(StringFormat("Handler::OnTradeTransaction trans.type == TRADE_TRANSACTION_DEAL_ADD %d",trans.deal_type));
+				//C_OrderManager.UpdateSLTP( POSITION_TYPE_BUY );
+				//C_OrderManager.UpdateSLTP( POSITION_TYPE_SELL );
+			//}
 		}
 
 		// *************************************************************************

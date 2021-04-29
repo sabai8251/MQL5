@@ -52,14 +52,10 @@ class CCheckerBars
 			diff_latest = OpenArray[0] - CloseArray[0];//最新のBar
 			diff_pre1   = OpenArray[1] - CloseArray[1];//1つ前のBar
 			if( diff_latest > DIFF_MINUTES_1 ||  diff_pre1 > DIFF_MINUTES_1 ){
-				//C_logger.output_log_to_file(StringFormat("CCheckerBars::Chk_preiod_m1_bars 1分値幅チェック下落局面 diff_latest = %f diff_pre1 = %f OpenArray[1] = %f CloseArray[1] = %f"
-				//                            ,diff_latest,diff_pre1,OpenArray[1],CloseArray[1]));
 				//下落局面なのでBUYは控える(過去‐現在が＋なので過去が高い、現在が低い→下落)
 				return RECOMMEND_STOP_BUY_DEAL;
 			}
 			if( -diff_latest > DIFF_MINUTES_1 ||  -diff_pre1 > DIFF_MINUTES_1 ){
-				//C_logger.output_log_to_file(StringFormat("CCheckerBars::Chk_preiod_m1_bars 1分値幅チェック上昇局面 diff_latest = %f diff_pre1 = %f OpenArray[1] = %f CloseArray[1] = %f"
-				//                            ,diff_latest,diff_pre1,OpenArray[1],CloseArray[1]));
 				return RECOMMEND_STOP_SELL_DEAL;
 			}
 
@@ -67,18 +63,10 @@ class CCheckerBars
 			diff_latest = OpenArray[3] - CloseArray[1];//3つ前の1分足のオープン価格から1つ前のクローズ価格の差分
 			diff_pre1   = OpenArray[2] - CloseArray[0];//1つ前のBar
 			if( diff_latest > DIFF_MINUTES_3 ||  diff_pre1 > DIFF_MINUTES_3 ){
-				//C_logger.output_log_to_file(StringFormat("CCheckerBars::Chk_preiod_m1_bars 3分値幅チェック下落局面 diff_latest = %f OpenArray[3] = %f CloseArray[1] = %f"
-				//                            ,diff_latest,OpenArray[3],CloseArray[1]));
-				//Print(StringFormat("CCheckerBars::Chk_preiod_m1_bars 3分値幅チェック下落局面 diff_latest = %f OpenArray[3] = %f CloseArray[1] = %f"
-				//            ,diff_latest,OpenArray[3],CloseArray[1]));
 				//下落局面なのでBUYは控える(過去‐現在が＋なので過去が高い、現在が低い→下落)
 				return RECOMMEND_STOP_BUY_DEAL;
 			}
 			if( -diff_latest > DIFF_MINUTES_3 || -diff_pre1 > DIFF_MINUTES_3 ){
-				//C_logger.output_log_to_file(StringFormat("CCheckerBars::Chk_preiod_m1_bars 3分値幅チェック上昇局面 diff_latest = %f OpenArray[3] = %f CloseArray[1] = %f"
-				//                            ,diff_latest,OpenArray[3],CloseArray[1]));
-				//Print(StringFormat("CCheckerBars::Chk_preiod_m1_bars 3分値幅チェック上昇局面 diff_latest = %f OpenArray[3] = %f CloseArray[1] = %f"
-				//           ,diff_latest,OpenArray[3],CloseArray[1]));
 				return RECOMMEND_STOP_SELL_DEAL;
 			}
 
@@ -86,15 +74,58 @@ class CCheckerBars
 			diff_latest = OpenArray[NUM_MINUTES_CUSTOM] - CloseArray[1];  //3つ前の1分足のオープン価格から1つ前のクローズ価格の差分
 			diff_pre1   = OpenArray[NUM_MINUTES_CUSTOM-1] - CloseArray[0];//1つ前のBar
 			if( diff_latest > DIFF_MINUTES_CUSTOM || diff_pre1 > DIFF_MINUTES_CUSTOM ){
-				//C_logger.output_log_to_file(StringFormat("CCheckerBars::Chk_preiod_m1_bars %d分値幅チェック下落局面 diff_latest = %f OpenArray[10] = %f CloseArray[1] = %f"
-				//                            ,NUM_MINUTES_CUSTOM,diff_latest,OpenArray[NUM_MINUTES_CUSTOM],CloseArray[1]));
 				//下落局面なのでBUYは控える(過去‐現在が＋なので過去が高い、現在が低い→下落)
 				return RECOMMEND_STOP_BUY_DEAL;
 			}
 			if( -diff_latest > DIFF_MINUTES_CUSTOM || -diff_pre1 > DIFF_MINUTES_CUSTOM ){
+				return RECOMMEND_STOP_SELL_DEAL;
+			}
+
+			return RECOMMEND_NO_PROBREM;
+		}
+
+		// *************************************************************************
+		//	機能		： スーパー下落局面は突然戻る可能性があるのでSELLは控える、スーパー高騰局面は突然戻る可能性があるのでBUYは控える
+		//	注意		： なし
+		//	メモ		： なし
+		//	引数		： なし
+		//	返り値		： 
+		//	参考URL		： なし
+		// **************************	履	歴	************************************
+		// 		v1.0		2021.04.14			Taji		新規
+		// *************************************************************************/
+		int Chk_preiod_m1_bars_stoporder(void){
+			int shift=0;
+			double range = GlobalVariableGet("tg_StopOrderJudge_range");
+			int minutes = GlobalVariableGet("tg_StopOrderJudge_minutes");
+			double OpenArray[ 1024 ]={0};
+			double CloseArray[ 1024 ]={0};
+			//配列崩壊防止
+			if( minutes >= 1024 ){
+				return false;
+			}
+			//Barの取得
+			for( int i = 0; i < minutes+1; i++){
+				OpenArray[i] = iOpen(Symbol(),PERIOD_M1,i);
+				CloseArray[i] = iClose(Symbol(),PERIOD_M1,i);
+			}
+
+			double diff_latest;
+			double diff_pre1;
+
+			//カスタムチェック(デフォルト10分)
+			diff_latest = OpenArray[minutes] - CloseArray[1];  //3つ前の1分足のオープン価格から1つ前のクローズ価格の差分
+			diff_pre1   = OpenArray[minutes-1] - CloseArray[0];//1つ前のBar
+			if( diff_latest > range || diff_pre1 > range ){
+				//C_logger.output_log_to_file(StringFormat("CCheckerBars::Chk_preiod_m1_bars %d分値幅チェック下落局面 diff_latest = %f OpenArray[10] = %f CloseArray[1] = %f"
+				//                            ,NUM_MINUTES_CUSTOM,diff_latest,OpenArray[NUM_MINUTES_CUSTOM],CloseArray[1]));
+				//スーパー下落局面は突然戻る可能性があるのでSELLは控える(過去‐現在が＋なので過去が高い、現在が低い→下落)
+				return RECOMMEND_STOP_SELL_DEAL;
+			}
+			if( -diff_latest > range || -diff_pre1 > range ){
 				//C_logger.output_log_to_file(StringFormat("CCheckerBars::Chk_preiod_m1_bars %d分値幅チェック上昇局面 diff_latest = %f OpenArray[10] = %f CloseArray[1] = %f"
 				//                            ,NUM_MINUTES_CUSTOM,diff_latest,OpenArray[NUM_MINUTES_CUSTOM],CloseArray[1]));
-				return RECOMMEND_STOP_SELL_DEAL;
+				return RECOMMEND_STOP_BUY_DEAL;
 			}
 
 			return RECOMMEND_NO_PROBREM;
