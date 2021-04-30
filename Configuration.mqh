@@ -7,31 +7,30 @@
 //**************************************************
 // Configuration
 //**************************************************
-//#define MAGICNUM 345675
 #define MAGICNUM 345676
 
 //OrderManager::CalculateNewTP()の計算方法をモードを定義やリスト定義
 #define TP_CALCULATION_MODE_TAKA	1
 #define TP_CALCULATION_MODE_TAJI	2
-int Config_tp_calculation_mode=TP_CALCULATION_MODE_TAKA;
-//int Config_tp_calculation_mode=TP_CALCULATION_MODE_TAJI;
+int Config_tp_calculation_mode=TP_CALCULATION_MODE_TAKA;//デフォルト
+//int Config_tp_calculation_mode=TP_CALCULATION_MODE_TAJI;//★変更Taji
 
 //**************************************************
 // ロット数に関する定義、リスト、カスタム関数
 //**************************************************
-#define BASE_LOT (0.1)//システム上の最小ロット数
-#define MAX_ORDER_NUM 6 // 注文追加数制限
+#define BASE_LOT (0.01)//システム上の最小ロット数
+//#define MAX_ORDER_NUM 7 // 注文追加数制限 //★変更Taji
+#define MAX_ORDER_NUM 6 // 注文追加数制限 //★デフォルト
 #define MAX_LOT_LIST_NUM 16 // ロットリストのリスト数
 
-//double g_base_lot = BASE_LOT;//最小ロット数
 //デフォルト注文時のBaseLotに対する倍率List
 double lot_list[]={
 	1,//注文１つ目のベースロット(m_base_lot)に対する倍率
 	2,//注文２つ目のベースロット(m_base_lot)に対する倍率
 	3,//注文３つ目のベースロット(m_base_lot)に対する倍率
-	4,//7,//注文４つ目のベースロット(m_base_lot)に対する倍率
-	5,//15,//注文５つ目のベースロット(m_base_lot)に対する倍率
-	6,//31,//注文６つ目のベースロット(m_base_lot)に対する倍率
+	4,//注文４つ目のベースロット(m_base_lot)に対する倍率
+	5,//注文５つ目のベースロット(m_base_lot)に対する倍率
+	6,//注文６つ目のベースロット(m_base_lot)に対する倍率
 	7,
 	8,
 	9,
@@ -278,10 +277,10 @@ void ConfigCustomizeTPTable(){
 //**************************************************
 // Checker用定義、リスト
 //**************************************************
-#define EA_STAGE		"Prototype"				// ステージ表示
-#define EA_VERSION		"1.00"					// バージョン表示
-#define EA_START_DATE	"2019.10.1 00:00"		// EA利用開始日
-#define EA_END_DATE		"2021.12.1 00:00"		// EA利用終了日
+#define EA_STAGE        "Prototype"         // ステージ表示
+#define EA_VERSION      "1.00"              // バージョン表示
+#define EA_START_DATE   "2019.10.1 00:00"   // EA利用開始日※期間外はフェードアウトモードへ移行
+#define EA_END_DATE     "2022.12.1 00:00"   // EA利用終了日※期間外はフェードアウトモードへ移行
 
 const long account_array[] = {
 					1257601,
@@ -294,4 +293,5 @@ const long account_array[] = {
 };
 
 #define MINIMUN_ACCOUNT_MARGIN_LEVEL 700 //取引可能な最低証拠金維持率(％)
+#define SPECIFIED_ACCOUNT_CHECK false //指定口座でないと動作させないかどうか false：無効　true：有効
 #endif

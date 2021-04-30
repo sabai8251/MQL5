@@ -52,7 +52,7 @@ class CCheckerException
 				return true;
 			}
 			else{
-				C_logger.output_log_to_file("CryptoMasterSystem Expired");
+				C_logger.output_log_to_file("CCheckerException::Chk_Expired(void) CryptoMasterSystem Expired");
 				return false;
 			}
 		}

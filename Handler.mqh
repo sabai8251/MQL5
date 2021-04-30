@@ -134,7 +134,9 @@ class CHandler
 			// 口座番号確認
 			if( C_CheckerException.Chk_Account() == false ){
 				C_logger.output_log_to_file("Handler::OnInit 特定口座ではない");
-				//ExpertRemove();					// OnDeinit()をコールしてEA終了処理
+				if( SPECIFIED_ACCOUNT_CHECK == true ){
+					ExpertRemove();					// OnDeinit()をコールしてEA終了処理
+				}
 			}
 
 			//カスタムテーブル処理(Configuration.mqh)
@@ -228,7 +230,7 @@ class CHandler
 		}
 
 		// *************************************************************************
-		//	機能		： 1分ごとに実行される関数
+		//	機能		： 期限切れ判断関数
 		//	注意		： なし
 		//	メモ		： タイマー関数内でコール
 		//	引数		： なし
@@ -237,11 +239,11 @@ class CHandler
 		// **************************	履	歴	************************************
 		// 		v1.0		2021.04.14			Taji		新規
 		// *************************************************************************/
-		void OnTimer1min() {
+		void Chk_Expired() {
 			// 有効期限切れ
 			if( C_CheckerException.Chk_Expired() == false ){
-				C_logger.output_log_to_file("1分タイマー終了処理");
-				ExpertRemove();					// OnDeinit()をコールしてEA終了処理
+				//C_logger.output_log_to_file("フェードアウトモード移行");
+				GlobalVariableSet("terminalg_fadeout_mode",true);
 			}	
 		}
 
@@ -256,15 +258,7 @@ class CHandler
 		// 		v1.0		2021.04.14			Taji		新規
 		// *************************************************************************/
 		void OnTimer(){
-			static int i = 0;
-			// 1分
-			if( i == 3 ){
-				OnTimer1min();		// 1分ごとに実施する関数
-				i = 1;
-			}
-			else{
-				i++;
-			}
+			
 		}
 
 		// *************************************************************************
@@ -289,6 +283,9 @@ class CHandler
 					return;
 				}
 			}
+
+			//日付チェック、フェードアウトモード移行
+			Chk_Expired();
 
 			C_OrderManager.UpdateSLTP( POSITION_TYPE_BUY );
 			C_OrderManager.UpdateSLTP( POSITION_TYPE_SELL );
@@ -362,29 +359,6 @@ class CHandler
 				}
 			}
 			//#######################################ショートの処理end######################################################
-		}
-
-		// *************************************************************************
-		//	機能		： Trunsaction更新ごとに実行される関数
-		//	注意		： なし
-		//	メモ		： 
-		//	引数		： なし
-		//	返り値		： なし
-		//	参考URL		： なし
-		// **************************	履	歴	************************************
-		// 		v1.0		2021.04.14			Taji		新規
-		// *************************************************************************/
-		void OnTradeTransaction(
-			const MqlTradeTransaction&    trans,        // 取引トランザクション構造体
-			const MqlTradeRequest&      request,      //リクエスト構造体
-			const MqlTradeResult&       result       // 結果構造体
-		){
-		//TPの更新(ややこしくなるので新規オーダーはTick()でのみするように！！！)
-			//if(trans.type == TRADE_TRANSACTION_DEAL_ADD){
-				//C_logger.output_log_to_file(StringFormat("Handler::OnTradeTransaction trans.type == TRADE_TRANSACTION_DEAL_ADD %d",trans.deal_type));
-				//C_OrderManager.UpdateSLTP( POSITION_TYPE_BUY );
-				//C_OrderManager.UpdateSLTP( POSITION_TYPE_SELL );
-			//}
 		}
 
 		// *************************************************************************
