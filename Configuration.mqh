@@ -7,7 +7,8 @@
 //**************************************************
 // Configuration
 //**************************************************
-#define MAGICNUM 345676
+#define MAGICNUM 345675//デフォルト
+//#define MAGICNUM 345676 //★変更taji
 
 //OrderManager::CalculateNewTP()の計算方法をモードを定義やリスト定義
 #define TP_CALCULATION_MODE_TAKA	1
@@ -47,7 +48,7 @@ double lot_list[]={
 void ConfigCustomizeLotList(){
 
 	//**************taji用**********************
-	if(Config_tp_calculation_mode == TP_CALCULATION_MODE_TAJI){ //★変更taji
+	if(Config_tp_calculation_mode == TP_CALCULATION_MODE_TAJI){ 
 	//フィボナッチ
 		lot_list[0] = 1;
 		lot_list[1] = 1;
@@ -118,7 +119,7 @@ void ConfigCustomizeDiffPriceOrderList(){
 	Print("ConfigCustomizeDiffPriceOrderList start");
 
 	//**************taji用**********************
-	if(Config_tp_calculation_mode == TP_CALCULATION_MODE_TAJI){//★変更taji
+	if(Config_tp_calculation_mode == TP_CALCULATION_MODE_TAJI){
 
 		for ( int i =0; i < MAX_DIFF_PRICE_LIST_NUM; i++ ){
 			// ピン幅設定
@@ -238,7 +239,7 @@ _tbl_TP tbl_TP[] = {
 void ConfigCustomizeTPTable(){
 	
 	//**************taji用**********************
-	if(Config_tp_calculation_mode == TP_CALCULATION_MODE_TAJI){//★変更taji
+	if(Config_tp_calculation_mode == TP_CALCULATION_MODE_TAJI){
 		tbl_TP[1].alpha = TP_ALPHA1;
 		tbl_TP[3].alpha = TP_ALPHA1;
 		tbl_TP[5].alpha = TP_ALPHA1;
@@ -260,7 +261,7 @@ void ConfigCustomizeTPTable(){
 //**************************************************
 // 値幅対応用定義、リスト
 //**************************************************
-//■急激な価格変更の検知時に、新規注文を入れない
+//■急激な価格変動の検知時に、新規注文を入れない
 //・1分の所定(250USD/60000USD)の値幅
 #define DIFF_MINUTES_1 200
 //・3分の所定(350USD/60000USD)の値幅
