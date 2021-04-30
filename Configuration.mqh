@@ -7,14 +7,14 @@
 //**************************************************
 // Configuration
 //**************************************************
-//#define MAGICNUM 345675//デフォルト
-#define MAGICNUM 345676 //★変更taji
+#define MAGICNUM 345675//デフォルト
+//#define MAGICNUM 345676 //★変更taji
 
 //OrderManager::CalculateNewTP()の計算方法をモードを定義やリスト定義
 #define TP_CALCULATION_MODE_TAKA	1
 #define TP_CALCULATION_MODE_TAJI	2
-//int Config_tp_calculation_mode=TP_CALCULATION_MODE_TAKA;//デフォルト
-int Config_tp_calculation_mode=TP_CALCULATION_MODE_TAJI;//★変更Taji
+int Config_tp_calculation_mode=TP_CALCULATION_MODE_TAKA;//デフォルト
+//int Config_tp_calculation_mode=TP_CALCULATION_MODE_TAJI;//★変更Taji
 
 //**************************************************
 // ロット数に関する定義、リスト、カスタム関数
