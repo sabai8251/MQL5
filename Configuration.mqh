@@ -7,14 +7,14 @@
 //**************************************************
 // Configuration
 //**************************************************
-#define MAGICNUM 345675//デフォルト
-//#define MAGICNUM 345676 //★変更taji
+//#define MAGICNUM 345675//デフォルト
+#define MAGICNUM 345676 //★変更taji
 
 //OrderManager::CalculateNewTP()の計算方法をモードを定義やリスト定義
 #define TP_CALCULATION_MODE_TAKA	1
 #define TP_CALCULATION_MODE_TAJI	2
-int Config_tp_calculation_mode=TP_CALCULATION_MODE_TAKA;//デフォルト
-//int Config_tp_calculation_mode=TP_CALCULATION_MODE_TAJI;//★変更Taji
+//int Config_tp_calculation_mode=TP_CALCULATION_MODE_TAKA;//デフォルト
+int Config_tp_calculation_mode=TP_CALCULATION_MODE_TAJI;//★変更Taji
 
 //**************************************************
 // ロット数に関する定義、リスト、カスタム関数
@@ -206,9 +206,9 @@ void ConfigCustomizeDiffPriceOrderList(){
 //**************************************************
 //TPテーブル用定義値
 #define TP_ALPHA1	200.0//デフォルト
-//#define TP_ALPHA1	100.0//★変更taji
 #define TP_ALPHA2	10.0
 #define TP_ALPHA3	60.0 
+#define TP_ALPHA4	100.0
 #define MAX_TP_TABLE_ARRAY_NUM 16 //リスト数
 
 //TPの指定テーブル
@@ -240,10 +240,14 @@ void ConfigCustomizeTPTable(){
 	
 	//**************taji用**********************
 	if(Config_tp_calculation_mode == TP_CALCULATION_MODE_TAJI){
-		tbl_TP[1].alpha = TP_ALPHA1;
-		tbl_TP[3].alpha = TP_ALPHA1;
-		tbl_TP[5].alpha = TP_ALPHA1;
-		tbl_TP[7].alpha = TP_ALPHA1;
+		tbl_TP[0].alpha = TP_ALPHA4;
+		tbl_TP[1].alpha = TP_ALPHA4;
+		tbl_TP[2].alpha = TP_ALPHA4;
+		tbl_TP[3].alpha = TP_ALPHA4;
+		tbl_TP[4].alpha = TP_ALPHA4;
+		tbl_TP[5].alpha = TP_ALPHA4;
+		tbl_TP[6].alpha = TP_ALPHA4;
+		tbl_TP[7].alpha = TP_ALPHA4;
 		return;
 	}
 	//*******************************************
