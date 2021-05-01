@@ -279,7 +279,7 @@ class CHandler
 			//証拠金維持率チェック(500％下回ったら取引しない)
 			if( AccountInfoDouble(ACCOUNT_MARGIN_LEVEL) != 0){//ポジションが0の時は維持率0になる
 				if( AccountInfoDouble(ACCOUNT_MARGIN_LEVEL) < MINIMUN_ACCOUNT_MARGIN_LEVEL ){
-					C_logger.output_log_to_file(StringFormat("証拠金維持率　=　%f",AccountInfoDouble(ACCOUNT_MARGIN_LEVEL)));
+					//C_logger.output_log_to_file(StringFormat("証拠金維持率　=　%f",AccountInfoDouble(ACCOUNT_MARGIN_LEVEL)));
 					return;
 				}
 			}
@@ -359,6 +359,42 @@ class CHandler
 				}
 			}
 			//#######################################ショートの処理end######################################################
+		}
+		// *************************************************************************
+		//	機能		： Trunsaction更新ごとに実行される関数
+		//	注意		： なし
+		//	メモ		： 
+		//	引数		： なし
+		//	返り値		： なし
+		//	参考URL		： なし
+		// **************************	履	歴	************************************
+		// 		v1.0		2021.04.14			Taji		新規
+		// *************************************************************************/
+		void OnTradeTransaction(
+			const MqlTradeTransaction&    trans,        // 取引トランザクション構造体
+			const MqlTradeRequest&      request,      //リクエスト構造体
+			const MqlTradeResult&       result       // 結果構造体
+		){
+			ulong deal = trans.deal;    //約定チケット
+			ulong order = trans.deal;   //注文チケット
+			//ENUM_DEAL_REASON reason = HistoryDealGetInteger(deal,DEAL_REASON);
+			ENUM_DEAL_REASON reason = HistoryDealGetInteger(order,DEAL_REASON);
+			//C_logger.output_log_to_file(StringFormat("Handler::OnTradeTransaction deal %d",deal));
+			//C_logger.output_log_to_file(StringFormat("Handler::OnTradeTransaction deal_type %d DEAL_TYPE_BUY=%d, DEAL_TYPE_SELL=%d",trans.deal_type,DEAL_TYPE_BUY,DEAL_TYPE_SELL));
+			//C_logger.output_log_to_file(StringFormat("Handler::OnTradeTransaction price_sl %d",trans.price_sl));
+			//C_logger.output_log_to_file(StringFormat("Handler::OnTradeTransaction type %d TRADE_TRANSACTION_DEAL_ADD=%d,TRADE_TRANSACTION_DEAL_UPDATE=%d,TRADE_TRANSACTION_HISTORY_ADD=%d,TRADE_TRANSACTION_HISTORY_UPDATE=%d",trans.type, TRADE_TRANSACTION_DEAL_ADD,TRADE_TRANSACTION_DEAL_UPDATE,TRADE_TRANSACTION_HISTORY_ADD,TRADE_TRANSACTION_HISTORY_UPDATE));
+			//C_logger.output_log_to_file(StringFormat("Handler::OnTradeTransaction reason=  %d DEAL_REASON=%d",reason,DEAL_REASON));
+			if( reason == DEAL_REASON_SL ){
+				C_logger.output_log_to_file(StringFormat("Handler::OnTradeTransaction DEAL_REASON_SL %d",trans.deal_type));
+				if(trans.deal_type == DEAL_TYPE_BUY){  //約定種類買い
+					C_logger.output_log_to_file(StringFormat("Handler::OnTradeTransaction DEAL_TYPE_BUY trans.type == TRADE_TRANSACTION_DEAL_ADD %d",trans.deal_type));
+					//OrderTradeActionCloseAll(POSITION_TYPE_SELL);
+				}
+				if(trans.deal_type == DEAL_TYPE_SELL){  //約定種類買い
+					C_logger.output_log_to_file(StringFormat("Handler::OnTradeTransaction DEAL_TYPE_SELL trans.type == TRADE_TRANSACTION_DEAL_ADD %d",trans.deal_type));
+					//OrderTradeActionCloseAll(POSITION_TYPE_BUY);
+				}
+			}
 		}
 
 		// *************************************************************************
