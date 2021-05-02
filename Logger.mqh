@@ -8,14 +8,14 @@ class CLogger
 		string          executionlog_directory_name;
 		string          executionlog_base_file_name;
 	
-		//ãƒ—ãƒ©ã‚¤ãƒ™ãƒ¼ãƒˆã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿(ä»–ã®ã‚¯ãƒ©ã‚¹ã«Newã¯ã•ã›ãªã„ãžï¼ï¼ï¼)
+		//ƒvƒ‰ƒCƒx[ƒgƒRƒ“ƒXƒgƒ‰ƒNƒ^(‘¼‚ÌƒNƒ‰ƒX‚ÉNew‚Í‚³‚¹‚È‚¢‚¼III)
 		CLogger(){
 			executionlog_directory_name = "Executionlogs";
 			executionlog_base_file_name = "logfile.log";
 		}
 
 	public:
-		//	æ©Ÿèƒ½		ï¼š //ã‚·ãƒ³ã‚°ãƒ«ãƒˆãƒ³ã‚¯ãƒ©ã‚¹ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹å–å¾—
+		//	‹@”\		F //ƒVƒ“ƒOƒ‹ƒgƒ“ƒNƒ‰ƒXƒCƒ“ƒXƒ^ƒ“ƒXŽæ“¾
 		static CLogger* GetLog()
 		{
 			if(CheckPointer(m_log) == POINTER_INVALID){
@@ -25,14 +25,14 @@ class CLogger
 		}
 
 		// *************************************************************************
-		//	æ©Ÿèƒ½		ï¼š ãƒ­ã‚°ãƒ•ã‚¡ã‚¤ãƒ«ã¸ã®å‡ºåŠ›
-		//	æ³¨æ„		ï¼š ãªã—
-		//	ãƒ¡ãƒ¢		ï¼š ãªã—
-		//	å¼•æ•°		ï¼š ãƒ­ã‚°ã«è¨˜éŒ²ã™ã‚‹æ–‡å­—
-		//	è¿”ã‚Šå€¤		ï¼š ãªã—
-		//	å‚è€ƒURL		ï¼š ãªã—
-		// **************************	å±¥	æ­´	************************************
-		// 		v1.0		2021.04.14			Taji		æ–°è¦
+		//	‹@”\		F ƒƒOƒtƒ@ƒCƒ‹‚Ö‚Ìo—Í
+		//	’ˆÓ		F ‚È‚µ
+		//	ƒƒ‚		F ‚È‚µ
+		//	ˆø”		F ƒƒO‚É‹L˜^‚·‚é•¶Žš
+		//	•Ô‚è’l		F ‚È‚µ
+		//	ŽQlURL		F ‚È‚µ
+		// **************************	—š	—ð	************************************
+		// 		v1.0		2021.04.14			Taji		V‹K
 		// *************************************************************************/
 		void output_log_to_file(string logtext){
 			string timestamptxt;
