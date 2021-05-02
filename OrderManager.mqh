@@ -260,16 +260,16 @@ class COrderManager
 			if( req_type == POSITION_TYPE_SELL ) alpha = -alpha;
 
 			double new_tp=0;
-			//TP計算(TP_CALCULATION_MODE_TAJI)
-			//if( 0 ){
-			//	new_tp = NormalizeDouble( position_price_array[array_num-1] + alpha, position_digits_array[array_num-1] );
-			//	C_logger.output_log_to_file( "OrderManager::CalculateNewTP " + (string)array_num + "つ目の注文価格 = " 
-			//								+(string)position_price_array[array_num-1] + " alpha = " + (string)alpha );
-			//}
 
 			//TP計算
 			if(1){
-				if( position_num > 3 ){		// 4つ以上注文があったら
+				int boundary_for_caluculation_num =3;
+
+				if(Config_tp_calculation_mode == TP_CALCULATION_MODE_TAJI){//★変更taji
+					boundary_for_caluculation_num = 2;
+				}
+
+				if( position_num > boundary_for_caluculation_num ){		// 4つ以上注文があったら(デフォルト)
 					// 少しでもプラスになったら約定
 					double sum_volume = 0.0;
 					double sum_amount = 0.0;
@@ -289,22 +289,22 @@ class COrderManager
 				//							+(string)position_price_array[array_num-1] + " alpha = " + (string)alpha );
 			}
 
-			   
+			//(test)3つ以上ポジション保持してから経過日時×100USDづつnew_tpを損する方向へずらす(2日以上経過したら発動)
 			if(Config_tp_calculation_mode == TP_CALCULATION_MODE_TAJI){//★変更taji
-
 				long current_time = (long)TimeCurrent();
+				if( position_num > 4 ){//ポジション5つ以上　3つ→0番　4つ→1番
+					if ( current_time - create_time_array[position_num-5] > 86400 ){
+						
+						int shift_days = (current_time - create_time_array[position_num-3]) / 86400;
+						double shift_tp = 100.0 * (shift_days - 1);
 
-				if ( current_time - create_time_array[position_num-1] > 86400 ){
-					//最初のポジションから経過日時×100USDづつnew_tpを損する方向へずらす 2日以上経過したら発動
-					int shift_days = (current_time - create_time_array[position_num-1]) / 86400;
-					double shift_tp = 100.0 * (shift_days - 1);
+						//SELLの場合はマイナス反転
+						if( req_type == POSITION_TYPE_SELL ) shift_tp = -shift_tp;
 
-					//SELLの場合はマイナス反転
-					if( req_type == POSITION_TYPE_SELL ) shift_tp = -shift_tp;
-
-					new_tp = new_tp - shift_tp;
-					//C_logger.output_log_to_file(StringFormat("  create_time_array[position_num-1] = %d current_time = %d ,shift_tp=%f", 
-					 //                           create_time_array[position_num-1],current_time,shift_tp));
+						new_tp = new_tp - shift_tp;
+						//C_logger.output_log_to_file(StringFormat("  create_time_array[position_num-1] = %d current_time = %d ,shift_tp=%f", 
+						//                           create_time_array[position_num-1],current_time,shift_tp));
+					}
 				}
 			}
 			//C_logger.output_log_to_file(StringFormat("  create_time_array[0] = %d current_time = %d", create_time_array[0],current_time));
@@ -331,15 +331,15 @@ class COrderManager
 
 			if( req_type == POSITION_TYPE_BUY ){
 				//C_logger.output_log_to_file(StringFormat("OrderManager::CalculateNewSL req_type = %d current_ask=%f tp=%f range=%f",req_type,current_ask,tp,trailingStop_range));
-				if( current_ask - tp >= trailingStop_range ){
-					new_sl = ( (int)( current_ask - trailingStop_range) / 5) * 5.0;//細かく刻むと処理に負荷がかかるので5づつ刻む
+				if( current_bid - tp >= trailingStop_range ){
+					new_sl = ( (int)( current_bid - trailingStop_range) / 5) * 5.0;//細かく刻むと処理に負荷がかかるので5づつ刻む
 					return new_sl;
 				}
 			}
 			if( req_type == POSITION_TYPE_SELL ){
 				//C_logger.output_log_to_file(StringFormat("OrderManager::CalculateNewSL req_type = %d current_bid=%f tp=%f range=%f",req_type,current_bid,tp,trailingStop_range));
-				if( tp - current_bid >= trailingStop_range ){
-					new_sl = ( (int)(current_bid + trailingStop_range) / 5) * 5.0;//細かく刻むと処理に負荷がかかるので5づつ刻む
+				if( tp - current_ask >= trailingStop_range ){
+					new_sl = ( (int)(current_ask + trailingStop_range) / 5) * 5.0;//細かく刻むと処理に負荷がかかるので5づつ刻む
 					return new_sl;
 				}
 			}
