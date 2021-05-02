@@ -289,8 +289,8 @@ class COrderManager
 				//							+(string)position_price_array[array_num-1] + " alpha = " + (string)alpha );
 			}
 
-			//(test)3つ以上ポジション保持してから経過日時×100USDづつnew_tpを損する方向へずらす(2日以上経過したら発動)
-			if(Config_tp_calculation_mode == TP_CALCULATION_MODE_TAJI){//★変更taji
+			//(test)5つ以上ポジション保持してから経過日時×100USDづつnew_tpを損する方向へずらす(2日以上経過したら発動)
+			if(0/*Config_tp_calculation_mode == TP_CALCULATION_MODE_TAJI*/){//★変更taji
 				long current_time = (long)TimeCurrent();
 				if( position_num > 4 ){//ポジション5つ以上　3つ→0番　4つ→1番
 					if ( current_time - create_time_array[position_num-5] > 86400 ){
@@ -302,8 +302,6 @@ class COrderManager
 						if( req_type == POSITION_TYPE_SELL ) shift_tp = -shift_tp;
 
 						new_tp = new_tp - shift_tp;
-						//C_logger.output_log_to_file(StringFormat("  create_time_array[position_num-1] = %d current_time = %d ,shift_tp=%f", 
-						//                           create_time_array[position_num-1],current_time,shift_tp));
 					}
 				}
 			}
