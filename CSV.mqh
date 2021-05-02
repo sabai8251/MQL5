@@ -8,7 +8,7 @@ class CCSV
 		string          executioncsv_directory_name;
 		string          executioncsv_base_file_name;
 		int             file_handle;
-		//ãƒ—ãƒ©ã‚¤ãƒ™ãƒ¼ãƒˆã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿(ä»–ã®ã‚¯ãƒ©ã‚¹ã«Newã¯ã•ã›ãªã„ãžï¼ï¼ï¼)
+		//ƒvƒ‰ƒCƒx[ƒgƒRƒ“ƒXƒgƒ‰ƒNƒ^(‘¼‚ÌƒNƒ‰ƒX‚ÉNew‚Í‚³‚¹‚È‚¢‚¼III)
 		CCSV(){
 			executioncsv_directory_name = "CSVFiles";
 			executioncsv_base_file_name = ".csv";
@@ -16,7 +16,7 @@ class CCSV
 		}
 
 	public:
-		//	æ©Ÿèƒ½		ï¼š //ã‚·ãƒ³ã‚°ãƒ«ãƒˆãƒ³ã‚¯ãƒ©ã‚¹ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹å–å¾—
+		//	‹@”\		F //ƒVƒ“ƒOƒ‹ƒgƒ“ƒNƒ‰ƒXƒCƒ“ƒXƒ^ƒ“ƒXŽæ“¾
 		static CCSV* GetCSV()
 		{
 			if(CheckPointer(m_CSV) == POINTER_INVALID){
@@ -26,14 +26,14 @@ class CCSV
 		}
 
 		// *************************************************************************
-		//	æ©Ÿèƒ½		ï¼š CSVãƒ•ã‚¡ã‚¤ãƒ«ã¸ã®å‡ºåŠ›
-		//	æ³¨æ„		ï¼š ãªã—
-		//	ãƒ¡ãƒ¢		ï¼š ãªã—
-		//	å¼•æ•°		ï¼š CSVã«è¨˜éŒ²ã™ã‚‹æ–‡å­—
-		//	è¿”ã‚Šå€¤		ï¼š ãªã—
-		//	å‚è€ƒURL		ï¼š ãªã—
-		// **************************	å±¥	æ­´	************************************
-		// 		v1.0		2021.04.14			Taji		æ–°è¦
+		//	‹@”\		F CSVƒtƒ@ƒCƒ‹‚Ö‚Ìo—Í
+		//	’ˆÓ		F ‚È‚µ
+		//	ƒƒ‚		F ‚È‚µ
+		//	ˆø”		F CSV‚É‹L˜^‚·‚é•¶Žš
+		//	•Ô‚è’l		F ‚È‚µ
+		//	ŽQlURL		F ‚È‚µ
+		// **************************	—š	—ð	************************************
+		// 		v1.0		2021.04.14			Taji		V‹K
 		// *************************************************************************/
 		void output_csv_to_file(string csvtext, string str_type = "Unknown" ){
 			string timestamptxt;
