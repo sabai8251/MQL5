@@ -22,6 +22,7 @@ class COrderManager
 			return m_OrderManager;
 		}
 
+
 		// *************************************************************************
 		//	機能		： 初期化　オーダーが残存している場合は、前回注文した注文価格を取得し保持する
 		//	注意		： なし
@@ -290,7 +291,7 @@ class COrderManager
 			}
 
 			//(test)5つ以上ポジション保持してから経過日時×100USDづつnew_tpを損する方向へずらす(2日以上経過したら発動)
-			if(0/*Config_tp_calculation_mode == TP_CALCULATION_MODE_TAJI*/){//★変更taji
+			/*if(Config_tp_calculation_mode == TP_CALCULATION_MODE_TAJI){//★変更taji
 				long current_time = (long)TimeCurrent();
 				if( position_num > 4 ){//ポジション5つ以上　3つ→0番　4つ→1番
 					if ( current_time - create_time_array[position_num-5] > 86400 ){
@@ -304,7 +305,7 @@ class COrderManager
 						new_tp = new_tp - shift_tp;
 					}
 				}
-			}
+			}*/
 			//C_logger.output_log_to_file(StringFormat("  create_time_array[0] = %d current_time = %d", create_time_array[0],current_time));
 
 			return new_tp;
@@ -325,6 +326,7 @@ class COrderManager
 			double current_ask = SymbolInfoDouble(Symbol(),SYMBOL_ASK);
 			double current_bid = SymbolInfoDouble(Symbol(),SYMBOL_BID);
 			double trailingStop_range=GlobalVariableGet("tg_trailingStop_range");
+			double SetSLFromTP_range=GlobalVariableGet("tg_SetSLFromTP_range");
 			double new_sl=0.0;
 
 			if( req_type == POSITION_TYPE_BUY ){
@@ -332,12 +334,20 @@ class COrderManager
 				if( current_bid - tp >= trailingStop_range ){
 					new_sl = ( (int)( current_bid - trailingStop_range) / 5) * 5.0;//細かく刻むと処理に負荷がかかるので5づつ刻む
 					return new_sl;
+				}else if(current_bid - tp >= SetSLFromTP_range ){
+					//TPをあるレンジ超えた段階でSLをセットする
+					new_sl = tp;
+					return new_sl;
 				}
 			}
 			if( req_type == POSITION_TYPE_SELL ){
 				//C_logger.output_log_to_file(StringFormat("OrderManager::CalculateNewSL req_type = %d current_bid=%f tp=%f range=%f",req_type,current_bid,tp,trailingStop_range));
 				if( tp - current_ask >= trailingStop_range ){
 					new_sl = ( (int)(current_ask + trailingStop_range) / 5) * 5.0;//細かく刻むと処理に負荷がかかるので5づつ刻む
+					return new_sl;
+				}else if( tp - current_ask >= SetSLFromTP_range ){
+					//TPをあるレンジ超えた段階でSLをセットする
+					new_sl = tp;
 					return new_sl;
 				}
 			}

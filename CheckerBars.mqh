@@ -94,7 +94,7 @@ class CCheckerBars
 		// **************************	履	歴	************************************
 		// 		v1.0		2021.04.14			Taji		新規
 		// *************************************************************************/
-		int Chk_preiod_m1_bars_stoporder(void){
+		/*int Chk_preiod_m1_bars_stoporder(void){
 			int shift=0;
 			double range = GlobalVariableGet("tg_StopOrderJudge_range");
 			int minutes = GlobalVariableGet("tg_StopOrderJudge_minutes");
@@ -129,6 +129,6 @@ class CCheckerBars
 			}
 
 			return RECOMMEND_NO_PROBREM;
-		}
+		}*/
 };
 CCheckerBars* CCheckerBars::m_CheckerBars;

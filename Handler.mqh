@@ -8,8 +8,10 @@
 #include "Configuration.mqh"
 #include "CheckerBars.mqh"
 input int trailingStop_mode = 100;
-input int super_volatility_range = 0;
-input int super_volatility_minutes = 0;
+input double input_SetSLFromTP_range = -1;
+input double input_trailingStop_range = -1;
+input double input_terminalg_lot = -1;
+
 class CHandler
 {
 	private:
@@ -83,6 +85,9 @@ class CHandler
 			if( false == GlobalVariableCheck("terminalg_lot")){
 				GlobalVariableSet("terminalg_lot",BASE_LOT);
 			}
+			if( input_terminalg_lot >= 0 ){
+				GlobalVariableSet("terminalg_lot",input_terminalg_lot);
+			}
 
 			//フェードアウトモードのターミナルグローバル変数がない場合は初期化
 			if( false == GlobalVariableCheck("terminalg_fadeout_mode")){
@@ -104,7 +109,18 @@ class CHandler
 			if( false == GlobalVariableCheck("tg_trailingStop_range")){
 				GlobalVariableSet("tg_trailingStop_range",100);
 			}
-			
+			if( input_trailingStop_range >= 0 ){
+				GlobalVariableSet("tg_trailingStop_range",input_trailingStop_range);
+			}
+
+			//TPを一定幅超えた場合にSLをTP値に設定する。TPの超え幅の値。
+			if( false == GlobalVariableCheck("tg_SetSLFromTP_range")){
+				GlobalVariableSet("tg_SetSLFromTP_range",5);
+			}
+			if( input_SetSLFromTP_range >= 0 ){
+				GlobalVariableSet("tg_SetSLFromTP_range",input_SetSLFromTP_range);
+			}
+
 			//BUY注文停止上限値のターミナルグローバル変数がなければ初期化
 			if( false == GlobalVariableCheck("tg_BuyOrderStopLimitMaxPrice")){
 				GlobalVariableSet("tg_BuyOrderStopLimitMaxPrice",1000000);
@@ -115,21 +131,6 @@ class CHandler
 				GlobalVariableSet("tg_SellOrderStopLimitMinPrice",0);
 			}
 
-			//スーパー変動時判断ロジックのレンジ(単位は$)パラメタのターミナルグローバル変数がなければ初期化
-			if( false == GlobalVariableCheck("tg_StopOrderJudge_range")){
-				GlobalVariableSet("tg_StopOrderJudge_range",10000);
-			}
-			if( super_volatility_range != 0 ){
-				GlobalVariableSet("tg_StopOrderJudge_range",super_volatility_range);
-			}
-
-			//スーパー変動時判断ロジックの検査期間(単位は分)パラメタのターミナルグローバル変数がなければ初期化
-			if( false == GlobalVariableCheck("tg_StopOrderJudge_minutes")){
-				GlobalVariableSet("tg_StopOrderJudge_minutes",10);
-			}
-			if( super_volatility_minutes != 0 ){
-				GlobalVariableSet("tg_StopOrderJudge_minutes",super_volatility_minutes);
-			}
 
 			// 口座番号確認
 			if( C_CheckerException.Chk_Account() == false ){
@@ -292,13 +293,13 @@ class CHandler
 
 			//急激な値幅の有無チェック。急な上場時はSELLを入れない。急な下降時はBUYを入れない
 			int deal_recomment;
-			int deal_recomment_for_super;
+			//int deal_recomment_for_super;
 			int diff_price_for_order = BASE_DIFF_PRICE_TO_ORDER2;
 			deal_recomment = C_CheckerBars.Chk_preiod_m1_bars();
-			deal_recomment_for_super = C_CheckerBars.Chk_preiod_m1_bars_stoporder();//壮大な過剰変動時対応
+			//deal_recomment_for_super = C_CheckerBars.Chk_preiod_m1_bars_stoporder();//壮大な過剰変動時対応
 
 			//#######################################ロングの処理start##################################################
-			if( RECOMMEND_STOP_BUY_DEAL != deal_recomment && RECOMMEND_STOP_BUY_DEAL != deal_recomment_for_super ){ //BUYが値幅チェックにより制限がかかっていなければ処理開始
+			if( RECOMMEND_STOP_BUY_DEAL != deal_recomment  ){ //BUYが値幅チェックにより制限がかかっていなければ処理開始
 				
 				//注文処理
 				int TotalOrderNumBuy = C_OrderManager.get_TotalOrderNum(POSITION_TYPE_BUY);
@@ -329,7 +330,7 @@ class CHandler
 			}
 			//#######################################ロングの処理end######################################################
 			//#######################################ショートの処理start##################################################
-			if( RECOMMEND_STOP_SELL_DEAL != deal_recomment  && RECOMMEND_STOP_SELL_DEAL != deal_recomment_for_super){ //SELLが値幅チェックにより制限がかかっていなければ処理開始
+			if( RECOMMEND_STOP_SELL_DEAL != deal_recomment ){ //SELLが値幅チェックにより制限がかかっていなければ処理開始
 
 				//注文処理
 				int TotalOrderNumSell = C_OrderManager.get_TotalOrderNum(POSITION_TYPE_SELL);
