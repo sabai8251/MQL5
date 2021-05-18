@@ -81,6 +81,14 @@ class CHandler
 		// *************************************************************************/
 		void OnInit(){
 
+            //グローバル変数の掃除
+			if( true == GlobalVariableCheck("tg_StopOrderJudge_range") ){
+				GlobalVariableDel("tg_StopOrderJudge_range");
+			}
+			if( true == GlobalVariableCheck("tg_StopOrderJudge_minutes") ){
+				GlobalVariableDel("tg_StopOrderJudge_minutes");
+			}
+
 			//ロット最小値のターミナルグローバル変数がなければ初期化
 			if( false == GlobalVariableCheck("terminalg_lot")){
 				GlobalVariableSet("terminalg_lot",BASE_LOT);
