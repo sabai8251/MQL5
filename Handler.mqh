@@ -285,6 +285,13 @@ class CHandler
 			//C_DisplayInfo.ShowData();				// コメントをチャート上に表示
 			double base_lot=GlobalVariableGet("terminalg_lot");
 
+
+			//日付チェック、フェードアウトモード移行
+			Chk_Expired();
+
+			C_OrderManager.UpdateSLTP( POSITION_TYPE_BUY );
+			C_OrderManager.UpdateSLTP( POSITION_TYPE_SELL );
+			
 			//証拠金維持率チェック(500％下回ったら取引しない)
 			if( AccountInfoDouble(ACCOUNT_MARGIN_LEVEL) != 0){//ポジションが0の時は維持率0になる
 				if( AccountInfoDouble(ACCOUNT_MARGIN_LEVEL) < MINIMUN_ACCOUNT_MARGIN_LEVEL ){
@@ -292,12 +299,6 @@ class CHandler
 					return;
 				}
 			}
-
-			//日付チェック、フェードアウトモード移行
-			Chk_Expired();
-
-			C_OrderManager.UpdateSLTP( POSITION_TYPE_BUY );
-			C_OrderManager.UpdateSLTP( POSITION_TYPE_SELL );
 
 			//急激な値幅の有無チェック。急な上場時はSELLを入れない。急な下降時はBUYを入れない
 			int deal_recomment;
